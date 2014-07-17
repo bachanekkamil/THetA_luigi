@@ -1,0 +1,73 @@
+<project name="Interval Count Pipeline 1.0" default="distJars" basedir=".">
+    <description>
+        Build file for buildIntervalsPrego.java code
+    </description>
+  <!-- set global properties for this build -->
+
+  <property name="srcBIP" location="src/prego"/>
+  <property name="srcPC" location="src/prune"/>
+  <property name="build" location="build"/>
+  <property name="buildBIP" location="build/prego"/>
+  <property name="buildPC" location="build/prune"/>
+  <property name="dist" location="bin"/>
+  
+
+  <target name="clean"
+        description="clean up" >
+    <!-- Delete the ${build} directory tree -->
+    <delete dir="${build}"/>
+    <!-- <delete dir="${dist}"/> -->
+  </target>
+
+  <target name="init" depends="clean">
+    <!-- Create the time stamp -->
+    <tstamp/>
+    <!-- Create the build directory structure used by compile -->
+    <mkdir dir="${build}"/>
+    <mkdir dir="${buildBIP}"/>
+    <mkdir dir="${buildPC}"/>
+    <mkdir dir="${dist}"/>
+  </target>
+
+  <target name="compilePREGO" depends="init"
+        description="compile the source " >
+    <!-- Compile the java code from ${srcBIP} into ${buildBIP} -->
+    <javac srcdir="${srcBIP}" includeantruntime="false" destdir="${buildBIP}"/>
+  </target>
+  
+  <target name="compilePruneClusters" depends="compilePREGO"
+        description="compile the source " >
+    <!-- Compile the java code from ${srcBIP} into ${buildBIP} -->
+	<javac srcdir="${srcPC}" includeantruntime="false" destdir="${buildPC}"/>
+  </target>
+
+  
+  <target name="distBuildPREGO" depends="compilePruneClusters"
+        description="generate the distribution buildIntervalsPREGO.jar" >
+
+    <!-- make jar file -->
+    <jar jarfile="${dist}/buildIntervalsPREGO.jar" basedir="${buildBIP}">
+      <manifest>
+		<attribute name="Main-Class" value="prego.buildIntervalsPREGO"/>
+      </manifest>
+    </jar>
+  </target>
+  
+  <target name="distBuildPruneClusters" depends="distBuildPREGO"
+        description="generate the distribution PruneClusters.jar" >
+
+    <!-- make jar file -->
+    <jar jarfile="${dist}/PruneClusters.jar" basedir="${buildPC}">
+      <manifest>
+		<attribute name="Main-Class" value="prune.PruneClusters"/>
+      </manifest>
+    </jar>
+  </target>
+
+  
+  <target name="distJars" depends="distBuildPruneClusters"
+        description="generates all jar files" >
+  </target>
+
+</project>
+

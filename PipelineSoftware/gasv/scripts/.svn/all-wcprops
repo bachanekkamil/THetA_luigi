@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 31
+/svn/!svn/ver/146/trunk/scripts
+END
+sortPR.bash
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/!svn/ver/22/trunk/scripts/sortPR.bash
+END
+GASVPruneClusters.pl
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/123/trunk/scripts/GASVPruneClusters.pl
+END
+parseLowQForNovoalign.pl
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/!svn/ver/67/trunk/scripts/parseLowQForNovoalign.pl
+END
+FilterFiles.py
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/svn/!svn/ver/146/trunk/scripts/FilterFiles.py
+END

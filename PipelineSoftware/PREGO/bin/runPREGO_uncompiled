@@ -1,0 +1,33 @@
+#!/bin/bash
+
+#Step 1: Check that code has been compiled
+COMPILED=FALSE
+
+if [ "$COMPILED" == "FALSE" ]
+then
+	echo "You must first run the install script before running PREGO."
+	exit
+fi
+
+#Step 2: Check number of arguments supplied
+REQ_ARGS=2
+
+if [ $# -lt $REQ_ARGS ]
+then
+	echo "Usage: $0 <IntervalFile> <VariantFile> [Options]"
+	exit
+fi
+
+INTERVAL=$1
+VARIANT=$2
+
+#Get full file path
+INTERVAL=$(readlink -f $INTERVAL)
+VARIANT=$(readlink -f $VARIANT)
+
+#Step 3: Run code
+
+BIN_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd $BIN_DIR
+cd ..
+cd java/src

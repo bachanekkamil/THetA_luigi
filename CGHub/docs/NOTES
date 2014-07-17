@@ -1,0 +1,61 @@
+1/23/2012
+CGHubUserGuide_v1_2.pdf downloaded from: https://cghub.ucsc.edu/CGHubUserGuide_v1_2.pdf on 1/23/2012
+
+#########################From an Email with the helpdesk on 1/24/2012#####################
+## This folowing pertains to a command that needs to be included in the following:
+## tar -vxzf GeneTorrent-1.0.0.4.Ubuntu10.04.x86_64.tar.gz
+
+Chris Wilks cwilks@soe.ucsc.edu
+	
+Jan 24
+		
+to Layla, support
+Hi Layla,
+
+try adding the following option to the GeneTorrent command you're running:
+ --confDir /path/to/extracted/genetorrent/usr/share/GeneTorrent/
+
+where it's two "-" and then the argument name "confDir" (just to be clear), and then the path to where you extracted genetorrent, appended with the internal dir structure of the genetorrent package (usr/share/GeneTorrent is where the conf files are).
+
+Please let us know if that is helpful or you need additional support,
+Thank you,
+Chris Wilks
+UCSC/CGHub
+
+###############################################################
+
+mkdir cgquery
+cd cgquery
+cgquery-1.9.tar.gz downloaded from: https://cghub.ucsc.edu/downloads.html
+tar -vxzf cgquery-1.9.tar.gz
+
+mkdir GeneTorrentUbuntu10.4
+cd GeneTorrentUbuntu10.4
+GeneTorrent-1.0.0.4.Ubuntu10.04.x86_64.tar.gz downloaded from : https://cghub.ucsc.edu/downloads.html
+tar -vxzf GeneTorrent-1.0.0.4.Ubuntu10.04.x86_64.tar.gz
+
+
+###############################################################
+# Upgrade to version 3.0.2 on 4/17/2012
+mkdir GeneTorrent-3.0.2-Ubuntu10
+cd GeneTorrent-3.0.2-Ubuntu10
+# GeneTorrent-3.0.2-Ubuntu10.x86_64.tar.gz downloaded from: http://cghug.ucsc.edu/downloads.html
+tar -vxzf GeneTorrent-3.0.2-Ubuntu10.x86_64.tar.gz 
+
+
+#########Move Old Versions####################################
+mkdir oldVersions
+cp runGeneTorrent.bash /oldVersions/runGeneTorrentUbuntu10.4.bash
+#Edit runGeneTorrent.bash to run newest version
+
+mv cgquery oldVersions
+mkdir cqquery
+#Downloaded 2.1.3 version on 1/15/2013 -- See NOTES in directory
+
+###############################################################
+# Upgrade to version 3.3.4 on 1/25/2013
+mkdir GeneTorrent-3.3.4-Ubuntu10.x86_64
+cd GeneTorrent-3.3.4-Ubuntu10.x86_64
+# Download from https://cghub.ucsc.edu/software/downloads.html
+tar -vxzf GeneTorrent-3.3.4-Ubuntu10.x86_64.tar.gz
+

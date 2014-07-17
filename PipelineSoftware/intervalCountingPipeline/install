@@ -1,0 +1,16 @@
+#!/bin/bash
+
+echo "Removing previous builds"
+rm -rf bin
+mkdir bin
+
+echo "Installing buildIntervalsGASVPro..."
+g++ -O2 -w src/buildIntervalsGASVPro.cpp -o bin/buildIntervalsGASVPro
+
+echo "Installing buildIntervalsPREGO..."
+ant
+
+echo "Installing IntervalCounts..."
+g++ -O2 -w src/IntervalCounts.cpp -o bin/IntervalCounts
+
+echo "Installation complete. Check for errors." 	

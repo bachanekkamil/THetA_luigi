@@ -1,0 +1,70 @@
+#!/bin/bash
+set -eu;
+
+echo "Checking config file..."
+CONFIG=config.txt
+CPLEX_JAR=""
+CPLEX_LIBS_DIR=""
+
+
+########################################
+# STEP 1: Retrieve configuration info
+#######################################
+while read -r line
+do
+
+    var1=$(echo $line | cut -f1 -d=)
+    var2=$(echo $line | cut -f2 -d=)
+
+    if [ "$var2" == "" ]
+    then
+	    echo "Error: You must first fill out entries in the config.txt file."
+	    exit 
+    fi
+
+    if [ "$var1" == "CPLEX_JAR" ]
+    then
+	export CPLEX_JAR=$var2
+    elif [ "$var1" == "CPLEX_LIBS_DIR" ]
+    then
+	export CPLEX_LIBS_DIR=$var2
+    fi
+done < <( grep -v '^#' $CONFIG )
+
+echo "--------------------------"
+echo "Configurations found:"
+echo "CPLEX_JAR=$CPLEX_JAR"
+echo "CPLEX_LIBS_DIR=$CPLEX_LIBS_DIR"
+
+######################################
+# STEP 2: Compile Source Code
+#####################################
+cd java/src
+echo "-------------------------"
+echo "Compiling PREGO code..."
+javac -cp .:$CPLEX_JAR:${CPLEX_LIBS_DIR}/* runPREGO.java
+cd ../..
+
+#####################################
+# STEP 3: Create/Update Executable
+######################################
+echo "------------------------"
+echo "Creating executable..."
+
+
+PREGO=bin/runPREGO
+PREGO_UNCOMPILED=bin/runPREGO_uncompiled
+
+cp $PREGO_UNCOMPILED $PREGO
+sed -i 's/COMPILED=FALSE/COMPILED=TRUE/g' $PREGO
+
+
+CMD="java -Djava.library.path=$CPLEX_LIBS_DIR -cp .:$CPLEX_JAR runPREGO \$INTERVAL \$VARIANT \${@:-2}"
+echo "$CMD" >> $PREGO
+chmod u+x $PREGO
+
+#######################################
+# STEP 4: Finalize
+######################################
+echo "---------------------"
+echo "Installation of PREGO complete."

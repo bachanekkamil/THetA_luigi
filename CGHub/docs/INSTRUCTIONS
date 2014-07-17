@@ -1,0 +1,100 @@
+1-23-2012
+Written by: Layla
+
+This document describes how to use the CGHub software to query and download TCGA data to the local file system.
+
+---------------------------------------------------------------------------------------------------------------
+Step 1: Query TCGA database. You can do this using the cgquery tool.  Explicit documentation on how to use this tool is located in this document:
+/research/compbio/software/CGHub/CGHubUserGuide_v1_2.pdf
+Notice: this tool is meant for 64bit architecture, but seems to run alright on 32bit as well.  You can access a 64bit machine using the grid by typing: qlogin.  You may need to run kinit first.
+
+Example Step 1:
+Let's say that you want to run a query for all BAM files related to TCGA-13-0723-01.  The following set of commands will do this:
+
+cd /research/compbio/software/CGHub/cgquery
+./cgquery xml_text="TCGA-13-0723-01"
+
+This will print the following results to the screen.
+
+============================================================================
+    Script Version               : 1.9
+    CGHub Server                 : https://cghub.ucsc.edu
+    REST Resource                : /cghub/metadata/analysisObject
+    QueryString                  : xml_text=TCGA-13-0723-01
+    Output File                  : None
+----------------------------------------------------------------------------
+    Results Returned             : 2
+============================================================================
+
+    Result 1                     
+        analysis_id              : 96e0db05-9655-4f06-84ae-d0304ba15122
+        analysis_data_uri        : https://cghub.ucsc.edu/cghub/data/analysis/download/96e0db05-9655-4f06-84ae-d0304ba15122
+        analysis_attribute_uri   : https://cghub.ucsc.edu/cghub/metadata/analysisAttributes/96e0db05-9655-4f06-84ae-d0304ba15122
+        last_modified            : 2010-12-22T08:00:00Z
+        center_name              : BI
+        state                    : live
+        aliquot_id               : a867d8e1-8b66-4b5a-9b95-20ce71d23526
+        Files                    
+            filename             : TCGA-13-0723-01A-02W-0371-08_IlluminaGA-DNASeq_capture.bam
+            filesize             : 40589148949
+            checksum             : 8c6010edb02e331df67dfac37dae556c
+
+    Result 2                     
+        analysis_id              : 822173ea-85a8-4e6d-90f2-30335c3ffd38
+        analysis_data_uri        : https://cghub.ucsc.edu/cghub/data/analysis/download/822173ea-85a8-4e6d-90f2-30335c3ffd38
+        analysis_attribute_uri   : https://cghub.ucsc.edu/cghub/metadata/analysisAttributes/822173ea-85a8-4e6d-90f2-30335c3ffd38
+        last_modified            : 2010-12-22T08:00:00Z
+        center_name              : BI
+        state                    : live
+        aliquot_id               : b319d1cc-5603-4968-8cb4-ef1636ad12c2
+        Files                    
+            filename             : TCGA-13-0723-10B-01W-0371-08_IlluminaGA-DNASeq_capture.bam
+            filesize             : 49159487063
+            checksum             : 5418f49d2ad00526d7d8aa2b8667d30b
+
+----------------------------------------------------------------------------
+    Parse Summary
+        Parse Errors             :  0
+        Parse Warnings           :  0
+----------------------------------------------------------------------------
+
+
+----------------------------------------------------------------------------
+Step 2:
+Notice, this returns both the Tumor and normal samples.  Select the "analysis_data_uri" for the Result that you want to download.  
+
+Example Step 2:
+So, for this example I will select the Result for the tumor sample: https://cghub.ucsc.edu/cghub/data/analysis/download/96e0db05-9655-4f06-84ae-d0304ba15122
+
+
+----------------------------------------------------------------------------
+Step 3: Create the directory in the appropriate location where you want to download the BAM file.  See /data/compbio/NOTES for more details.  Also, make sure that permissions are set correctly on this directory so that only the appropriate people have access to the data.  For more details see: http://raphaelgroup.cs.brown.edu/wiki/index.php/Access_Control_basics
+
+Example Step 3:
+cd /gpfs/data/compbio/publicdata/TCGA
+mkdir BAM_OV
+chgrp BAM_OV #So no one but me has access
+setfacl BAM_OV -R -m u:braphael:rwx BAM_OV #Now Ben also has access
+setfacl -m d:u::rwx,d::rwx,d:m:rwx,d:o:r-x BAM_OV #All new files created in the directory will have the same permissions
+cd BAM_OV
+mkdir OV2T
+
+
+---------------------------------------------------------------------------
+Step 4: Use GeneTorrent to download the bam file.  I've created a wrapper script (/research/compbio/software/CGHub/runGeneTorrent.bash) in this directory that can be used to do this so that you don't have to enter all of the flags that won't change.  GeneTorrent requires that you run it on 64bit architecture.  You can ssh to franklin (ssh franklin is the command) to access a 64-bit machine.  If for some reason this fails, you can also login to a node on the grid using the qlogin command (you may need to kinit first) which will put you on a 64bit machine.
+
+runGeneTorrent.bash Usage:
+./runGeneTorrent.bash analysis_data_uri output_dir
+
+NOTICE: Our current login key will expire on January 23, 2013!!!  Instructions on how to generate a new key are located here:
+/gpfs/research/compbio/software/CGHub/CGHubUserGuide_v1_2.pdf
+
+NOTICE: You must use full path name to make this work.  Relative paths (ie .) will NOT work.
+
+
+Example Step 4:
+
+ssh franklin
+cd /research/compbio/software/CGHub
+./runGeneTorrent  https://cghub.ucsc.edu/cghub/data/analysis/download/96e0db05-9655-4f06-84ae-d0304ba15122 /gpfs/data/compbio/publicdata/TCGA/BAM_OV/OV2T
+

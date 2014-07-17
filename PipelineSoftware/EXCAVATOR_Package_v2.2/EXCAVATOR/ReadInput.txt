@@ -1,0 +1,2 @@
+SS50 hg19 /.../DataWES/MyControl.exome.bam ContrID C1
+SS50 hg19 /.../DataWES/MySample.exome.bam SmpID T1

@@ -1,0 +1,113 @@
+K 25
+svn:wc:ra_dav:version-url
+V 37
+/svn/!svn/ver/144/trunk/src/gasv/main
+END
+ReadESP.java
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/137/trunk/src/gasv/main/ReadESP.java
+END
+PairedCGH.java
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/22/trunk/src/gasv/main/PairedCGH.java
+END
+BreakRegion.java
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/22/trunk/src/gasv/main/BreakRegion.java
+END
+ClusterESP.java
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/121/trunk/src/gasv/main/ClusterESP.java
+END
+ReadInput.java
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/144/trunk/src/gasv/main/ReadInput.java
+END
+FilterESP.java
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/22/trunk/src/gasv/main/FilterESP.java
+END
+ReadCGH.java
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/22/trunk/src/gasv/main/ReadCGH.java
+END
+Clone.java
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/137/trunk/src/gasv/main/Clone.java
+END
+CGH.java
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/svn/!svn/ver/22/trunk/src/gasv/main/CGH.java
+END
+GenomicPos.java
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/22/trunk/src/gasv/main/GenomicPos.java
+END
+Rectangle.java
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/22/trunk/src/gasv/main/Rectangle.java
+END
+Edge.java
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/svn/!svn/ver/22/trunk/src/gasv/main/Edge.java
+END
+GASVMain.java
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/121/trunk/src/gasv/main/GASVMain.java
+END
+IntervalClone.java
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/!svn/ver/22/trunk/src/gasv/main/IntervalClone.java
+END
+ReadFile.java
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/22/trunk/src/gasv/main/ReadFile.java
+END
+ConvertFileToPolygons.java
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/!svn/ver/22/trunk/src/gasv/main/ConvertFileToPolygons.java
+END
+EndPoint.java
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/22/trunk/src/gasv/main/EndPoint.java
+END
+Cluster.java
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/22/trunk/src/gasv/main/Cluster.java
+END

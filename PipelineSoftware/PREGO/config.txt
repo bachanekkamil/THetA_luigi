@@ -1,0 +1,22 @@
+# This is a configuration file for running PREGO. 
+# Since PREGO requires Cplex, this is where the location where
+# a user will indicate that the required files are located.
+#
+# Before using PREGO, a user must fill out the following pieces of information
+# about where CPLEX is located in their file system.
+#
+# CPLEX_JAR - the full path of the object "cplex.jar" for the
+# version of cplex you intend to use
+# CPLEX_LIB - the full path of the directory that contains the static library 
+# libcplex*.so for the version of cplex you intend to use
+#
+#EXAMPLE:
+#CPLEX_JAR=/local/projects/cplex/cplex/cplex123/x86_64/lib/cplex.jar
+#CPLEX_LIBS_DIR=/local/projects/cplex/cplex/cplex123/x86_64/bin/x86-64_sles10_4.1
+#
+#
+#
+###########################################################################
+CPLEX_JAR=/local/projects/cplex/cplex/cplex123/x86_64/lib/cplex.jar
+CPLEX_LIBS_DIR=/local/projects/cplex/cplex/cplex123/x86_64/bin/x86-64_sles10_4.1
+############################################################################

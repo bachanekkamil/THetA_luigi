@@ -1,0 +1,16 @@
+-------------------------------------------------------------------------------
+PREGO_1.0 -- Initial Release
+-------------------------------------------------------------------------------
+PREGO_1.1-- 
+1. New file format allowed (old file format still works)
+   See Manual for details.
+2. New option to used concordant coverage for normal genome
+   to make reconstruction of genome.  See Manual for details.
+3. Code now automatically outputs a .graphml file that can be 
+   visualized using yEd (http://www.yworks.com/en/products_yed_about.html)
+-------------------------------------------------------------------------------
+PREGO_1.2
+1. Fixed tandem duplication bug in visualization code.
+2. Fixed bug with showing self loops in visualization code.
+3. OUTPUT_PREFIX now applies to all output files
+-------------------------------------------------------------------------------

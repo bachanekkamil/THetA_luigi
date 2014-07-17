@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# GASV
+echo "UPDATING GASV"
+pushd gasv; svn up; popd
+
+#THetA
+echo "UPDATING THetA"
+pushd theta; git pull; ./install; popd

@@ -1,0 +1,77 @@
+K 25
+svn:wc:ra_dav:version-url
+V 35
+/svn/!svn/ver/144/trunk/src/gasvPro
+END
+GASVPro-cc-new.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/!svn/ver/144/trunk/src/gasvPro/GASVPro-cc-new.cpp
+END
+dsexceptions.h
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/47/trunk/src/gasvPro/dsexceptions.h
+END
+GASVPro-mcmc.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/132/trunk/src/gasvPro/GASVPro-mcmc.cpp
+END
+strutils.h
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/svn/!svn/ver/47/trunk/src/gasvPro/strutils.h
+END
+GASVPro-graph.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/132/trunk/src/gasvPro/GASVPro-graph.cpp
+END
+LinkedList.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/47/trunk/src/gasvPro/LinkedList.cpp
+END
+GASVPro-cc.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/132/trunk/src/gasvPro/GASVPro-cc.cpp
+END
+convertClusters.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/!svn/ver/124/trunk/src/gasvPro/convertClusters.cpp
+END
+LinkedList.h
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/!svn/ver/47/trunk/src/gasvPro/LinkedList.h
+END
+espmapping.h
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/!svn/ver/47/trunk/src/gasvPro/espmapping.h
+END
+IntervalTree.h
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/53/trunk/src/gasvPro/IntervalTree.h
+END
+problemInstance.h
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/129/trunk/src/gasvPro/problemInstance.h
+END

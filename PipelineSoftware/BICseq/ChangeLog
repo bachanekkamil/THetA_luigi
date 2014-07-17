@@ -1,0 +1,4 @@
+March 21, 2012:
+	R Package: fixed an issue in getSummary which caused a cyclic package
+	           dependency.
+	PERL pipe: removed some problem-causing whitespace.
