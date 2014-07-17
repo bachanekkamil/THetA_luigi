@@ -1,0 +1,60 @@
+# 12/04/2013 - Gryte
+This directory contains pipeline scripts for running BAM files through 
+various programs. The two main scripts are:
+
+processBAMPair.bash 
+DESC: Runs programs on a single pair of BAM Files 
+USAGE: processBAMPair.bash config bamTumor bamNormal ID
+PARAMS:
+	config - Config file specifies which programs will be run, as well as the
+			 output location and the locations of some reference files 
+			 (e.g. the reference genome). A sample config file is located in 
+			 the configs directory named "configShell.txt". 
+	bamTumor - /the/path/to/TUMOR.bam
+	bamNormal - /the/path/to/NORMAL.bam
+	ID - The ID is what the directory containing output files will be named
+
+processBatchBAM.py
+DESC: Runs processBAMPair.bash on a list of BAM pairs				
+USAGE: processBatchBAM.sh BAMList config
+PARAMS: 
+	BAMList - List of BAM pairs. For each pair, there should be 3 lines, in the
+			order bamTumor, bamNormal, ID
+	config - File as describled in processBAMPair.bash
+
+Additional helper script:
+createBAMList.py
+DESC: Creates BAMList file in the format expected by processBatchBAM.sh
+USAGE: createBAMList.sh DIR
+PARAMS: DIR - base directory, structure described in greater
+	 detail in createBAMList.py 
+
+All program scripts should be in scripts directory.
+
+# 12/17/2013 - Gryte
+Added scripts to pair up BAM files based on analysisID
+
+In order to be able to run files, use the following technique:
+$DATA - location of data directory (i.e. /tmp/links/data/)
+
+ls $DATA > anIDs.txt
+python AnalysisIDtoTCGA.py anIDs.txt ../reference/WGSMetadata > barcode.txt
+python PairBAMFiles.py barcode.txt > batchInput.txt
+rm anIDs.txt barcode.txt
+
+AnalysisIDtoTCGA.py 
+DESC: Given a list of analysis IDS, returns the matching TCGA Bar codes
+USAGE: AnalysisIDtoTCGA.py AnalysisIDFile XMLFile
+PARAMS: AnalysisIDFile: List of analysis IDs
+	XMLFile: Metadata XML file from cgquery
+
+
+PairBAMFiles.py
+DESC: Given a list of IDs, a directory containing the files and their barcode,
+	pairs up files returns them in the format accepted by processBatchBAM.py
+USAGE: PairBAMFiles.py BarcodeFile (prefix)
+PARAMS: BarcodeFile: File containing lines with the analysisID and bar code
+			tab separted (output of AnalysisIDtoTCGA.py)
+
+
+
