@@ -1,0 +1,2 @@
+chrname1	10
+chr17	not-an-id

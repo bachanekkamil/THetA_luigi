@@ -1,0 +1,133 @@
+This file outlines the basic architectural layout for the bam2gasv source code. This file is best viewed using Emacs' org-mode, but if viewed as a plaintext file, just note that the number of line-initial '*'s represents the level of indent in an outline document.
+
+* Source Files
+  Located in src/bam2gasv, there are two types of source files, each with a distinctive naming convention.
+
+** b2g_* files
+   Files beginning with b2g_ represent datatypes  or utilities shared among all components of the main program, such as error codes or structs representing BAM reads or ESPs.
+
+*** b2g_bam
+    Provides an interface to samtools' bam1_t, representing a single read from a BAM file. 
+
+*** b2g_bam_header
+    Provides an interface to samtoolbs' bam_header_t, allowing the reading out of libraries, chromosomes, and header data relevant to bam2gasv.
+
+*** b2g_chromosome
+    Provides a datatype representing a list of chromosomes present in a b2g_bam_header.
+
+*** b2g_conc_pair
+    Provides a datatype representing a pair of reads that is known to be concordant. Equivalent in functionality to b2g_disc_pair for all operations that would make sense for a concordant pair, but requires less allocated memory.
+
+*** b2g_constants
+    Provides numeric constants, display strings, the b2g_platform_t datatype, and other utilities not sufficiently complex to warrant their own modules.
+
+*** b2g_cutoff_lminlmax
+    Provides the datatype and associated input parser for the CUTOFF_LMINLMAX option.
+
+*** b2g_disc_pair
+    Provides a datatype representing a discordant pair.
+
+*** b2g_error
+    Provides error codes and error printing functions for communicating fatal errors to the program's top level and rendering the corresponding user-facing messages.
+
+*** b2g_libraries
+    Provides a collection datatype representing all b2g_library_t's present in a given b2g_bam_header or specified in a CUTOFF_LMINLMAX file.
+
+*** b2g_library
+    Provides a datatype representing a single library contained in a b2g_bam_header_t. Used for aggregating and computing pair statistics for use in calculating pair variant_types, and for writing pairs to the appropriate variant_type-specific buffers.
+
+*** b2g_library_stats
+    Provides a sub-component of a b2g_library_t representing the collected and computed statistics necessary to determine pair variant_types.
+
+*** b2g_pair
+    Provides a generic interface to b2g_disc_pair_t and b2g_conc_pair_t that automatically dispatches commont functions to the correct datatype, allowing generic pair-handling code to be written for handling pairs of either type.
+
+*** b2g_signal
+    Provides signals used for communicating out-of-band messages between concurrent processes. In general, threads will communicate with streams of b2g_bams or b2g_pairs interspersed by signals from this module to control program flow.
+
+*** b2g_variant_type
+    Provides the datatype representing and the function for computing the variant_type of pair given an lmin and an lmax.
+
+** *2* files
+   Files containing a '2' in the middle represent functions that consume the data type described by the first half of the name and produce the data type described by the second half of the name. The entire program can be thought of as one function from btg_input to gasv_input (bam2gasv.c does not follow this convention, because it is the program's main() file, but if it did it would be named btg_input2gasv_input.c). Each function is composed of smaller functions that follow the same naming scheme, so bam2gasv (btg_input2gasv_input) calls btg_input2params followed by params2gasv_input. Each file can therefore be placed unambiguously in the call hierarchy based on name.
+
+*** bam2gasv (aka btg_input2gasv_input
+    Calls btg_input2params to parse the command-line arguments into program parameters, and then params2gasv_input to run the core program logic. This is the main function. 
+
+**** btg_input2params
+     Parses the command-line arguments into program parameters.
+
+**** params2gasv_input
+     This function has 3 phases:
+     First, it calls params2bam_files to split the BAM file into smaller BAM files that will fit into main memory. (This may be skipped if the entire BAM file can fit into main memory).
+     Next, it calls bam_files2pair_files to pair the reads from each BAM file and output a separate set of output files for each.
+     Finally, it calls pair_files2btg_output to merge the pair files into the final output format. (This will be skipped if the first step was skipped).
+
+***** params2bam_files
+      If LARGE_BAM is true, the input BAM file is too large to fit into main memory. This function splits that file into smaller BAM files that can be read into memory. It does so by creating a number of files and binning reads into each file based on a hash of their qname, ensuring that reads with matching qnames end up in the same file. This way, we can be sure that once we have read a file into memory, all possible matching qnames will have been seen and any unmatched reads can be disposed of without worrying that they may match reads we will encounter in other files.
+
+***** bam_files2pair_files
+      Iterates over the split BAM files (possibly just the single original BAM file) and for each, calls bam_files2bams to read the file into memory. This function also spawns a thread for bams2unsorted_pairs to pair reads with the same qname, several threads (one per variant type) for unsorted_pairs2pairs to sort the matched pairs (or unsorted_pairs2lowq_file in the case of low quality pairs), and several more threads (one per variant type) for pairs2pair_files to write the pairs to disk.
+
+****** bam_files2bams
+       Reads the BAM file(s) into memory.
+
+****** bams2unsorted_pairs
+       Deposits each bam into a hash table and, in the event of a collision, creates a pair.
+
+****** unsorted_pairs2pairs
+       As pair of a specific variant type are created, this function continually sorts them and merges them into a sorted list of pairs of that variant type. This runs in a separate thread for each variant type.
+
+****** unsorted_pairs2lowq_file
+       Writes low quality pairs to lowq and split_read files.
+
+****** pairs2pair_files
+       After an entire BAM file worth of pairs of a particular variant type has been sorted, this writes the pairs to disk to make room for additional files to be read into memory. This runs in a separate thread for each variant type.
+
+***** pair_files2btg_output
+      If LARGE_BAM is true, then we will have generated one set of output files for each (library . variant_type) pair. This function calls pair_files2pair_file_buffers to read each file into a memory buffer, and then calls pair_file_buffers2btg_output to merge the contents of those buffers into a single set of output files, preserving correct pair ordering.
+
+****** pair_files2pair_file_buffers
+       For each (library . variant_type) pair, this function reads all pair_files corresponding to that pair (one for each split BAM file) into memory buffers.
+
+****** pair_file_buffers2btg_output
+       For each (library . variant_type) pair, this function merges the contents of all buffers corresponding to that pair into a single, sorted output file.
+
+
+* Tests
+  There are 3 types of tests: unit, integration, and system. all tests can be run with the uniform syntax "make test/<test-type>/<test-name> (e.g. "make test/integration/pct"). Groups of tests can be run by leaving off the lower levels of the hierarchical name (e.g. "make test/integration" to run all integration tests, or "make test" to run all tests). Tests are performed with assert(), so a failing test will halt execution with an assertion failed message. Passing tests will just result in blank lines.
+
+** unit
+   Unit tests test individual components of the system.
+
+*** btg_input2params
+    Tests the commandline argument parser.
+
+** integration
+    Integration tests test the entire program's logic by feeding parameters directly to the program (circumventig the command line interface).
+
+*** basic
+    The basic test tests the most reduced feature set to ensure a basic level of functionality (no lowq, no concordants, etc).
+
+*** sd
+    Tests the standard deviation method of computing lmin and lmax, and varies a few extraneous parameters from the basic test.
+
+*** pct
+    Tests the percent method of computing lmin and lmax, and varies a few extraneous parameters from the basic test.
+
+*** lowmem
+    Runs the basic test but tests the LARGE_BAM low memory split/merge subsystem.
+
+*** ambig
+    (Currently inactive). Runs the basic test while treating the input file as AMBIGUOUS. 
+
+***  validate
+     The validate test acts as an informal "proof of consistency" among the various possible program outputs. The test runs the program on a number of different parameter combinations and ensures that invariants remain invariant between the outputs. Eg each pair in a .divergent file should be divergent for a given run's lmin/lmax, and a parameter that has no effect on the number of low quality reads should not change the number of low quality reads from run to run.
+
+
+** system
+   System tests test the system "from the outside" by sending program inputs on the command line exactly as the user would.
+
+*** basic
+    The basic test tests the most reduced feature set to ensure a basic level of functionality (no lowq, no concordants, etc).
+

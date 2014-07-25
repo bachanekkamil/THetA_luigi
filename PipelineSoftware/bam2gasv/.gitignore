@@ -1,0 +1,7 @@
+bin
+cscope.out
+tmp
+*lowqual*
+*splitread*
+*Example.bam
+lib/samtools

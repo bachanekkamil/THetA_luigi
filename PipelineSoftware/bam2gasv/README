@@ -1,0 +1,3 @@
+To compile, run "make"
+
+./bin/bam2gasv should appear as a binary. Run it with no arguments to see a list of options (should be similar to previous API).

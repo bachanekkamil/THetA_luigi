@@ -1,0 +1,4 @@
+chrname1	10
+chr17	9
+
+
