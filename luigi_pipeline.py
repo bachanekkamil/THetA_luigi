@@ -91,7 +91,12 @@ class RunTHetA(luigi.Task):
 		return {'BICSeq': BICSeq(prefix = self.prefix, out_dir = self.out_dir, download_dir = self.download_dir), 
 				'intervalCountingPipeline': intervalCountingPipeline(prefix = self.prefix, out_dir = self.out_dir, download_dir = self.download_dir)}
 	def run(self):
-		#run theta and bicseqtotheta
+		#Get bicseg location
+		bicseq_output_loc = os.path.join(self.out_dir, "BICSeq", prefix + ".bicseg")
+		subprocess.call(["./PipelineSoftware/theta/bin/RunTHetA.sh", bicseq_output_loc, self.prefix, self.this_out_dir, READ_DEPTH_FILE_LOC])
+
+
+
 
 		subprocess.call(["touch", os.path.join(self.this_out_dir, self.prefix + ".pdf")])
 
@@ -153,27 +158,27 @@ class BAMtoGASV(luigi.Task):
 		subprocess.call(["mkdir", normal_dir])
 		subprocess.call(["mkdir", tumor_dir])
 		#Run on normal
-		subprocess.call(["./PipelineSoftware/bam2gasv/bin/bam2gasv", PATHTONORMALBAMFILE, "-WRITE_CONCORDANT true", "MAPPING_QUALITY 30", "OUTPUT_PREFIX " + prefix])
+		subprocess.call(["./pipeline/scripts/runBAMtoGASV.sh", normal_dir, PATHTONORMALBAMFILE, "NORMAL"])
 		#move files
-		subprocess.call(["mv", "*.gasv.in", normal_dir])
-		subprocess.call(["mv", "*.info", normal_dir])
-		subprocess.call(["mv", "*.deletion", normal_dir])
-		subprocess.call(["mv", "*.divergent", normal_dir])
-		subprocess.call(["mv", "*.insertion", normal_dir])
-		subprocess.call(["mv", "*.inversion", normal_dir])
-		subprocess.call(["mv", "*.translocation", normal_dir])
-		subprocess.call(["mv", "*.concordant", normal_dir])
+		# subprocess.call(["mv", "*.gasv.in", normal_dir])
+		# subprocess.call(["mv", "*.info", normal_dir])
+		# subprocess.call(["mv", "*.deletion", normal_dir])
+		# subprocess.call(["mv", "*.divergent", normal_dir])
+		# subprocess.call(["mv", "*.insertion", normal_dir])
+		# subprocess.call(["mv", "*.inversion", normal_dir])
+		# subprocess.call(["mv", "*.translocation", normal_dir])
+		# subprocess.call(["mv", "*.concordant", normal_dir])
 		#Run on tumor
-		subprocess.call(["./PipelineSoftware/bam2gasv/bin/bam2gasv", PATHTOTUMORBAMFILE, "-WRITE_CONCORDANT true", "MAPPING_QUALITY 30", "OUTPUT_PREFIX " + prefix])
+		subprocess.call(["./pipeline/scripts/runBAMtoGASV.sh", tumor_dir, PATHTOTUMORBAMFILE, "TUMOR"])
 		#Move files
-		subprocess.call(["mv", "*.gasv.in", normal_dir])
-		subprocess.call(["mv", "*.info", tumor_dir])
-		subprocess.call(["mv", "*.deletion", tumor_dir])
-		subprocess.call(["mv", "*.divergent", tumor_dir])
-		subprocess.call(["mv", "*.insertion", tumor_dir])
-		subprocess.call(["mv", "*.inversion", tumor_dir])
-		subprocess.call(["mv", "*.translocation", tumor_dir])
-		subprocess.call(["mv", "*.concordant", tumor_dir])
+		# subprocess.call(["mv", "*.gasv.in", normal_dir])
+		# subprocess.call(["mv", "*.info", tumor_dir])
+		# subprocess.call(["mv", "*.deletion", tumor_dir])
+		# subprocess.call(["mv", "*.divergent", tumor_dir])
+		# subprocess.call(["mv", "*.insertion", tumor_dir])
+		# subprocess.call(["mv", "*.inversion", tumor_dir])
+		# subprocess.call(["mv", "*.translocation", tumor_dir])
+		# subprocess.call(["mv", "*.concordant", tumor_dir])
 		subprocess.call(["touch", os.path.join(self.this_out_dir, "BAMtoGASVfinished.txt")])		
 	def output(self):
 		# return luigi.LocalTarget("path/to/output/stuffz")
@@ -195,7 +200,7 @@ class BICSeq(luigi.Task):
 		tumor_conc = os.path.join(out_dir, "BAMtoGASV_output", "TUMOR", prefix + ".concordant")
 		bicseq_input_loc = this_out_dir #To be created
 		#Run script
-		subprocess.call(["./pipeline/scripts/runBICseq.sh", this_out_dir, tumor_conc, normal_conc, bicseq_input_loc])
+		subprocess.call(["./pipeline/scripts/runBICseq.sh", self.this_out_dir, tumor_conc, normal_conc, bicseq_input_loc, self.prefix])
 		#Remove input file
 		subprocess.call(["rm", "-f", os.path.join(this_out_dir, "*.input")])
 		#done
