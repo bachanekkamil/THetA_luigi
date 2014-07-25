@@ -30,6 +30,6 @@ The executables for each software component are in `/pipelineSoftware`.
 
 The shell scripts for running each step of the pipeline are in `/pipeline`. 
 
-##Generating the files to download
+##Step 1: Generating the files to download
 
 The pipeline takes as input `analysis_URIS.txt`, which contains tab-delimted lines of *analysis_uri_id	prefix*. To generate this file, use `./cgquery "library_strategy=WGS >> WGS_results.txt"` (as an example) in `CGHub/cgquery`. Then run `parse_WGS_results.py` to generate `analysis_URIS.txt`. This may become automated as well in the future, but for now, flexibility is a priority. Move the file to the top directory level.
