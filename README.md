@@ -1,6 +1,10 @@
 #THetA pipeline
 
-This pipeline uses [Luigi](https://github.com/spotify/luigi) to automate the download, processing, and data analysis of files related to THetA. 
+This pipeline uses [Luigi](https://github.com/spotify/luigi) to automate the download, processing, and data analysis of files related to THetA. THetA is a software suite that exploits cancer genomic structural variation to determine tumor heterogeneity in a sample. 
+
+THetA was written by the [http://compbio.cs.brown.edu/](Raphael Lab) at Brown University.
+
+![Sample output](/path/to/image)
 
 ![Dependency chart](/path/to/image)
 

@@ -84,12 +84,15 @@ class RunTHetA(luigi.Task):
 	download_dir = luigi.Parameter()
 	this_out_dir = ""
 	def requires(self):
+		self.this_out_dir = os.path.join(theta_dir, "THetA_input")
+ 		subprocess.call(["mkdir", self.this_out_dir])
 		self.this_out_dir = os.path.join(self.out_dir, "THetA")		
 		subprocess.call(["mkdir", self.this_out_dir])
-		return {'BICSeqToTheta': BICSeqToTHetA(prefix = self.prefix, out_dir = self.out_dir, download_dir = self.download_dir), 
+		return {'BICSeq': BICSeq(prefix = self.prefix, out_dir = self.out_dir, download_dir = self.download_dir), 
 				'intervalCountingPipeline': intervalCountingPipeline(prefix = self.prefix, out_dir = self.out_dir, download_dir = self.download_dir)}
 	def run(self):
-		#run theta
+		#run theta and bicseqtotheta
+
 		subprocess.call(["touch", os.path.join(self.this_out_dir, self.prefix + ".pdf")])
 
 	def output(self):
@@ -140,16 +143,41 @@ class BAMtoGASV(luigi.Task):
 	download_dir = luigi.Parameter()
 	this_out_dir = ""
 	def requires(self):
-		self.this_out_dir = os.path.join(self.out_dir, "GASV")
+		self.this_out_dir = os.path.join(self.out_dir, "BAMtoGASV_output")
 		subprocess.call(["mkdir", self.this_out_dir])		
 		return downloadGenome(self.prefix)
 	def run(self):
 		#Run BAMtoGASV
-		# subprocess.call(["./pipeline/scripts/runGASVNEW.sh", os.path.join(out, )])
-		subprocess.call(["touch", os.path.join(self.this_out_dir, "BAMtoGASV.txt")])		
+		normal_dir = os.path.join(this_out_dir, "NORMAL") 
+		tumor_dir = os.path.join(this_out_dir, "TUMOR")
+		subprocess.call(["mkdir", normal_dir])
+		subprocess.call(["mkdir", tumor_dir])
+		#Run on normal
+		subprocess.call(["./PipelineSoftware/bam2gasv/bin/bam2gasv", PATHTONORMALBAMFILE, "-WRITE_CONCORDANT true", "MAPPING_QUALITY 30", "OUTPUT_PREFIX " + prefix])
+		#move files
+		subprocess.call(["mv", "*.gasv.in", normal_dir])
+		subprocess.call(["mv", "*.info", normal_dir])
+		subprocess.call(["mv", "*.deletion", normal_dir])
+		subprocess.call(["mv", "*.divergent", normal_dir])
+		subprocess.call(["mv", "*.insertion", normal_dir])
+		subprocess.call(["mv", "*.inversion", normal_dir])
+		subprocess.call(["mv", "*.translocation", normal_dir])
+		subprocess.call(["mv", "*.concordant", normal_dir])
+		#Run on tumor
+		subprocess.call(["./PipelineSoftware/bam2gasv/bin/bam2gasv", PATHTOTUMORBAMFILE, "-WRITE_CONCORDANT true", "MAPPING_QUALITY 30", "OUTPUT_PREFIX " + prefix])
+		#Move files
+		subprocess.call(["mv", "*.gasv.in", normal_dir])
+		subprocess.call(["mv", "*.info", tumor_dir])
+		subprocess.call(["mv", "*.deletion", tumor_dir])
+		subprocess.call(["mv", "*.divergent", tumor_dir])
+		subprocess.call(["mv", "*.insertion", tumor_dir])
+		subprocess.call(["mv", "*.inversion", tumor_dir])
+		subprocess.call(["mv", "*.translocation", tumor_dir])
+		subprocess.call(["mv", "*.concordant", tumor_dir])
+		subprocess.call(["touch", os.path.join(self.this_out_dir, "BAMtoGASVfinished.txt")])		
 	def output(self):
 		# return luigi.LocalTarget("path/to/output/stuffz")
-		return luigi.LocalTarget(os.path.join(self.this_out_dir, "BAMtoGASV.txt"))
+		return luigi.LocalTarget(os.path.join(self.this_out_dir, "BAMtoGASVfinished.txt"))
 
 #BICSeq
 class BICSeq(luigi.Task):
@@ -162,25 +190,34 @@ class BICSeq(luigi.Task):
 		subprocess.call(["mkdir", self.this_out_dir])		
 		return BAMtoGASV(prefix = self.prefix, out_dir = self.out_dir, download_dir = self.download_dir)
 	def run(self):
-		subprocess.call(["touch", os.path.join(self.this_out_dir, "BICSeq.txt")])
+		# Takes concordant files as input
+		normal_conc = os.path.join(out_dir, "BAMtoGASV_output", "NORMAL", prefix + ".concordant")
+		tumor_conc = os.path.join(out_dir, "BAMtoGASV_output", "TUMOR", prefix + ".concordant")
+		bicseq_input_loc = this_out_dir #To be created
+		#Run script
+		subprocess.call(["./pipeline/scripts/runBICseq.sh", this_out_dir, tumor_conc, normal_conc, bicseq_input_loc])
+		#Remove input file
+		subprocess.call(["rm", "-f", os.path.join(this_out_dir, "*.input")])
+		#done
+		subprocess.call(["touch", os.path.join(self.this_out_dir, "BICSeqDone.txt")])
 	def output(self):
-		return luigi.LocalTarget(os.path.join(self.this_out_dir, "BICSeq.txt"))
+		return luigi.LocalTarget(os.path.join(self.this_out_dir, "BICSeqDone.txt"))
 
-#Returns the interval files 
-class BICSeqToTHetA(luigi.Task):
-	prefix = luigi.Parameter()
-	out_dir = luigi.Parameter()
-	download_dir = luigi.Parameter()
-	this_out_dir = ""
-	def requires(self):
-		theta_dir = os.path.join(self.out_dir, "THetA")
-		self.this_out_dir = os.path.join(theta_dir, "THetA_input")
-		subprocess.call(["mkdir", self.this_out_dir])
-		return BICSeq(prefix = self.prefix, out_dir = self.out_dir, download_dir = self.download_dir)
-	def run(self):
-		subprocess.call(["touch", os.path.join(self.this_out_dir, "BICSeqToTHetA.txt")])
-	def output(self):
-		return luigi.LocalTarget(os.path.join(self.this_out_dir, "BICSeqToTHetA.txt"))
+# #Returns the interval files 
+# class BICSeqToTHetA(luigi.Task):
+# 	prefix = luigi.Parameter()
+# 	out_dir = luigi.Parameter()
+# 	download_dir = luigi.Parameter()
+# 	this_out_dir = ""
+# 	def requires(self):
+# 		theta_dir = os.path.join(self.out_dir, "THetA")
+# 		self.this_out_dir = os.path.join(theta_dir, "THetA_input")
+# 		subprocess.call(["mkdir", self.this_out_dir])
+# 		return BICSeq(prefix = self.prefix, out_dir = self.out_dir, download_dir = self.download_dir)
+# 	def run(self):
+# 		subprocess.call(["touch", os.path.join(self.this_out_dir, "BICSeqToTHetA.txt")])
+# 	def output(self):
+# 		return luigi.LocalTarget(os.path.join(self.this_out_dir, "BICSeqToTHetA.txt"))
 
 """
 The C++ code that counts the 50kb bins.
@@ -191,7 +228,7 @@ class intervalCountingPipeline(luigi.Task):
 	download_dir = luigi.Parameter()	
 	this_out_dir = ""
 	def requires(self):
-		return downloadGenome(self.prefix)
+		return BAMtoGASV(prefix = self.prefix, out_dir = self.out_dir, download_dir = self.download_dir)
 	def run(self):
 		#????????????????
 		self.this_out_dir = os.path.join(self.out_dir, "intervalPipeline")
@@ -208,15 +245,24 @@ class intervalCountingPipeline(luigi.Task):
 #############################################################################################################
 
 class downloadGenome(luigi.Task):
-	global prefix_to_id
+	global samples
 	prefix = luigi.Parameter()
 	pipeline_downloads = pipeline_downloads
 	download_dir = ""
 	def run(self):
-		global prefix_to_id
-		analysis_uri_id = prefix_to_id[self.prefix]
 		self.download_dir = os.path.join(self.pipeline_downloads, self.prefix)
-		# subprocess.call(["./CGHub/runGeneTorrentNew.bash", analysis_uri_id, self.download_dir])
+		normal_dir = os.path.join(self.download_dir, "NORMAL")
+		tumor_dir = os.path.join(self.download_dir, "TUMOR")
+		mkdir(normal_dir)
+		mkdir(tumor_dir)
+
+		#Download normal
+		# subprocess.call(["./CGHub/runGeneTorrentNew.bash", samples[prefix][normal_aurid], self.download_dir])
+
+		#Download tumor
+
+		# subprocess.call(["./CGHub/runGeneTorrentNew.bash", samples[prefix][tumor_aurid], self.download_dir])
+
 		subprocess.call(["touch", os.path.join(self.download_dir, self.prefix + "downloadComplete.txt")])
 	def output(self):
 		return luigi.LocalTarget(os.path.join(self.download_dir, self.prefix + "downloadComplete.txt"))
@@ -241,7 +287,7 @@ tasks_to_run = []
 global prefix_to_id
 prefix_to_id = {}
 
-with open("analysis_URIS.txt", "r") as URI_file:
+with open("seq_info.txt", "r") as seq_file:
 	count = 0
 	for line in URI_file:
 		count += 1
@@ -257,6 +303,20 @@ with open("analysis_URIS.txt", "r") as URI_file:
 		except:
 			continue
 
+
+#Make a dictionary for reference sequences
+#Dictionary of prefix -> 
+# {
+# 	norm_dir
+# 	tumor_dir
+# 	ref_assem
+# 	norm_aurid
+# 	tumor_aurid
+# }
+global samples
+samples = 
+
+
 # print tasks_to_run
 
-luigi.build([TriggerAll()], workers=2)
+luigi.build([TriggerAll()], workers=1)

@@ -2,4 +2,6 @@ keys/
 cghub/
 *.tsv
 GeneTorrent-3.3.4-Ubuntu10.x86_64/
-
+all_downloads/
+all_outputs/
+analysis_URIs.txt

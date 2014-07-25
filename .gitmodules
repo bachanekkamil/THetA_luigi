@@ -1,0 +1,3 @@
+[submodule "PipelineSoftware/theta"]
+	path = PipelineSoftware/theta
+	url = https://daviddliu@bitbucket.org/raphaellab/theta.git

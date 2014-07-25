@@ -19,9 +19,9 @@ OUTPUT_DIR=$2
 # KEY_FILE=/research/compbio/software/CGHub/cghub.key
 
 #Called from Python subprocess, so CGHub is necessary as part of the path.
-GENE_TORRENT_BIN=$(pwd)/CGHub/GeneTorrent-3.3.4-Ubuntu10.x86_64/usr/bin
-GENE_TORRENT_CONFS=$(pwd)/CGHub/GeneTorrent-3.3.4-Ubuntu10.x86_64/usr/share/GeneTorrent/
-KEY_FILE=$(pwd)/CGHub/keys/cghub.key
+GENE_TORRENT_BIN=$(pwd)/GeneTorrent-3.3.4-Ubuntu10.x86_64/usr/bin
+GENE_TORRENT_CONFS=$(pwd)/GeneTorrent-3.3.4-Ubuntu10.x86_64/usr/share/GeneTorrent/
+KEY_FILE=$(pwd)/keys/cghub.key
 
 
 echo -e "Output Directory:" $OUTPUT_DIR
