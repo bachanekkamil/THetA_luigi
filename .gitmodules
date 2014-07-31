@@ -1,3 +1,6 @@
 [submodule "PipelineSoftware/theta"]
 	path = PipelineSoftware/theta
 	url = https://daviddliu@bitbucket.org/raphaellab/theta.git
+[submodule "PipelineSoftware/virtualSNPArray"]
+	path = PipelineSoftware/virtualSNPArray
+	url = https://daviddliu@bitbucket.org/raphaellab/virtualsnparray.git

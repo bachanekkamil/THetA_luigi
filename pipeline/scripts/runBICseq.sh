@@ -2,7 +2,7 @@
 
 #==============================================================================
 
-# set -e
+set -e
 
 # source $config
 
@@ -19,13 +19,15 @@ PREFIX=$5
 #	Create BIC-seq input
 ###
 #if [ ! -f "$BICseq_INPUT.config" ]; then
-pushd "../../PipelineSoftware/BICseq/"
+# pushd "PipelineSoftware/BICseq/"
+pushd $OUT_DIR
+# echo $PWD
 echo "Running createBICSeqInput..."
-java createBICSeqInput $TUMOR_CONC $NORMAL_CONC -OUTPUT_PREFIX $PREFIX
+java -classpath ../../../PipelineSoftware/BICseq createBICSeqInput $TUMOR_CONC $NORMAL_CONC -OUTPUT_PREFIX $PREFIX
 popd
 #fi
 
-BICseq_LOC="./software/BICseq/PERL_pipeline/BICseq_1.1.2/BIC-seq"
+BICseq_LOC="./PipelineSoftware/BICseq/PERL_pipeline/BICseq_1.1.2/BIC-seq"
 BICseq_CONFIG=$PREFIX".config"
 # BICseq_PREFIX=$5
 
@@ -33,7 +35,9 @@ BICseq_CONFIG=$PREFIX".config"
 #	Run BIC-seq pipeline
 ###
 #if [ ! -d "$BICseqDIR" ]; then
+pushd $OUT_DIR
 echo "Running BIC-seq..."
-$BICseq_LOC/BIC-seq.pl $BICseq_CONFIG $OUT_DIR $PREFIX
+../../../$BICseq_LOC/BIC-seq.pl $BICseq_CONFIG output $PREFIX
+popd
 #fi
 

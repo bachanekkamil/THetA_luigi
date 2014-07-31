@@ -92,17 +92,11 @@ class RunTHetA(luigi.Task):
 				'intervalCountingPipeline': intervalCountingPipeline(prefix = self.prefix, out_dir = self.out_dir, download_dir = self.download_dir)}
 	def run(self):
 		#Get bicseg location
-		bicseq_output_loc = os.path.join(self.out_dir, "BICSeq", prefix + ".bicseg")
-		subprocess.call(["./PipelineSoftware/theta/bin/RunTHetA.sh", bicseq_output_loc, self.prefix, self.this_out_dir, READ_DEPTH_FILE_LOC])
-
-
-
-
-		subprocess.call(["touch", os.path.join(self.this_out_dir, self.prefix + ".pdf")])
-
+		bicseq_output_loc = os.path.join(self.out_dir, "BICSeq/output", prefix + ".bicseg")
+		subprocess.call(["./pipeline/scripts/RunTHetA.sh", bicseq_output_loc, self.prefix, self.this_out_dir, READ_DEPTH_FILE_LOC])
+		subprocess.call(["touch", os.path.join(self.this_out_dir, "THetA_complete.txt")])
 	def output(self):
-		return luigi.LocalTarget(os.path.join(self.this_out_dir, self.prefix + ".pdf"))
-
+		return luigi.LocalTarget(os.path.join(self.this_out_dir, "THetA_complete.txt"))
 
 #############################################################################################################
 #Define the main workflow dependency graph.
@@ -196,8 +190,8 @@ class BICSeq(luigi.Task):
 		return BAMtoGASV(prefix = self.prefix, out_dir = self.out_dir, download_dir = self.download_dir)
 	def run(self):
 		# Takes concordant files as input
-		normal_conc = os.path.join(out_dir, "BAMtoGASV_output", "NORMAL", prefix + ".concordant")
-		tumor_conc = os.path.join(out_dir, "BAMtoGASV_output", "TUMOR", prefix + ".concordant")
+		normal_conc = os.path.join(out_dir, "BAMtoGASV_output", "NORMAL_", prefix + ".concordant")
+		tumor_conc = os.path.join(out_dir, "BAMtoGASV_output", "TUMOR_", prefix + ".concordant")
 		bicseq_input_loc = this_out_dir #To be created
 		#Run script
 		subprocess.call(["./pipeline/scripts/runBICseq.sh", self.this_out_dir, tumor_conc, normal_conc, bicseq_input_loc, self.prefix])
@@ -235,13 +229,21 @@ class intervalCountingPipeline(luigi.Task):
 	def requires(self):
 		return BAMtoGASV(prefix = self.prefix, out_dir = self.out_dir, download_dir = self.download_dir)
 	def run(self):
-		#????????????????
 		self.this_out_dir = os.path.join(self.out_dir, "intervalPipeline")
 		subprocess.call(["mkdir", self.this_out_dir])
-		subprocess.call(["touch", os.path.join(self.this_out_dir, "interval.txt")])
+		parameter_file_path = os.path.abspath(os.path.join(self.this_out_dir, "parameters.txt")))
+		with open(parameter_file_path, "w") as parameter_file:
+			#MAKE SURE YOU USE ABS PATHS!
+			parameter_file.write("IntervalFile: "+ os.path.abspath(os.path.join(self.this_out_dir, "intervals.txt")))
+			parameter_file.write("Software: PREGO")
+			parameter_file.write("ConcordantFile: " + NORMAL CONCORDANT FILE)
+			parameter_file.write("Concordantfile: " + TUMOR CONCORDANT FILE)
+		if subprocess.call(["./pipeline/scripts/runIntervalPipeline.sh", self.this_out_dir, parameter_file_path]) != 0:
+			sys.exit()
+		subprocess.call(["touch", os.path.join(self.this_out_dir, "intervalsDone.txt")])
 	def output(self):
 		#????????????????
-		return luigi.LocalTarget(os.path.join(self.this_out_dir, "interval.txt"))
+		return luigi.LocalTarget(os.path.join(self.this_out_dir, "intervalsDone.txt"))
 	# def complete(self):
 	# 	return True
 
