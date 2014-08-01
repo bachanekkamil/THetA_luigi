@@ -143,7 +143,7 @@ class intervalCountingPipeline(luigi.Task):
 		tumor_conc = os.path.join(self.out_dir, "BAMtoGASV_output", "TUMOR", "TUMOR_" + samples[self.name]['tumor_prefix'] + "-lib1.concordant")
 		#Write parameter file
 		with open(parameter_file_path, "w") as parameter_file:
-			parameter_file.write("IntervalFile: "+ os.path.abspath(self.this_out_dir + "\n"))
+			parameter_file.write("IntervalFile: "+ os.path.join(self.this_out_dir, "intervals.txt") + "\n")
 			parameter_file.write("Software: PREGO" + "\n")
 			parameter_file.write("ConcordantFile: " + samples[self.name]['norm_concordant'] + "\n")
 			parameter_file.write("ConcordantFile: " + samples[self.name]['tumor_concordant'])
@@ -313,6 +313,5 @@ tasks_to_run = []
 
 # tasks_to_run.append(deleteBAMFiles("TCGA-67-3771"))
 tasks_to_run.append(deleteBAMFiles("TCGA-A7-A0CE"))
-
 
 luigi.build([TriggerAll()], workers=1)

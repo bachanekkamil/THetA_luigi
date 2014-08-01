@@ -13,7 +13,7 @@ snpconfig=$OUT_DIR/snpconfig.txt
 
 SNP_FILE=""
 
-if [ "$REF_ASSEM" == "hg_19" ];then
+if [ "$REF_ASSEM" == "hg19" ];then
 	SNP_FILE=$THIS_DIR/1000G_hg19_snps.tsv
 else
 	SNP_FILE=$THIS_DIR/AffySNP6.0_hg18.txt.formatted
