@@ -8,11 +8,9 @@ THetA was written by the [Raphael Lab](http://compbio.cs.brown.edu/) at Brown Un
 
 ![Dependency chart](/path/to/image)
 
-#Execution
-
-To execute the pipeline, simply run `python luigi_pipeline.py`. Use `./install` to ensure the correct dependencies and to generate the `.class` files.
-
 #Structure
+
+Use `./install` to ensure the correct dependencies and to generate the `.class` files.
 
 ##Included software
 + CGHub
@@ -29,6 +27,8 @@ The scripts for downloading `.bam` files are in `/CGHub`.
 The executables for each software component are in `/pipelineSoftware`.
 
 The shell scripts for running each step of the pipeline are in `/pipeline`. 
+
+#Execution
 
 ##Step 1: Generating the files to download
 
