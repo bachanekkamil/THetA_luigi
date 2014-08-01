@@ -10,7 +10,7 @@ import simplejson
 #This pipeline automates genome downloading and processing from CGHub. The bottom of the file is the head of the graph.
 #############################################################################################################
 __author__ = "David Liu"
-__version__ = 1.0
+__version__ = 1.1
 
 
 """
@@ -41,11 +41,12 @@ class deleteBAMFiles(luigi.Task):
 	def requires(self):
 		self.this_out_dir = os.path.join(self.pipeline_output, self.name)
 		self.this_download_dir = os.path.join(self.pipeline_downloads, self.name)
-		return {"RunTHetA":RunTHetA(name = self.name, out_dir = self.this_out_dir, download_dir = self.this_download_dir)}
+		return {"RunTHetA":RunTHetA(name = self.name, out_dir = self.this_out_dir, download_dir = self.this_download_dir),
+				"virtualSNPArray":virtualSNPArray(name = self.name, out_dir = self.this_out_dir, download_dir = self.this_download_dir)}
 	def run(self):
 		#subprocess.call(["rm", "-rf", self.this_download_dir])
 		file = open(os.path.join(self.this_out_dir, "job_summary.txt"), "w")
-		file.write(json.dumps(samples[self.name], indent = 3))	
+		file.write(simplejson.dumps(samples[self.name], indent = 3))	
 		file.write(self.time_began + "\n")
 		file.write(strftime("Time finished: %a, %d %b %Y %H:%M:%S", gmtime()))
 		file.close()
@@ -71,7 +72,12 @@ class RunTHetA(luigi.Task):
 		#Get bicseg location
 		subprocess.call(["mkdir", self.this_out_dir])
 		bicseq_output_loc = os.path.join(self.out_dir, "BICSeq/output", self.name + ".bicseg")
-		if subprocess.call(["./pipeline/scripts/runTHetA.sh", bicseq_output_loc, self.name, self.this_out_dir, "/gpfs/main/research/compbio/users/ddliu/luigi_pipeline/all_outputs/a_genome/intervalPipeline/intervals.txt_processed"]) != 0:
+		#Get read depth file location (_processed)
+		intervalPipeline_dir = os.path.join(self.out_dir, "intervalPipeline")
+		processed_file = subprocess.Popen("cd "  + intervalPipeline_dir +"; echo $(ls *_processed)", stdout=subprocess.PIPE, shell = True)
+		processed_file_loc = os.path.join(intervalPipeline_dir, processed_file)
+		#Run THETA!!!
+		if subprocess.call(["./pipeline/scripts/runTHetA.sh", bicseq_output_loc, self.name, self.this_out_dir, processed_file_loc]) != 0:
 			sys.exit()
 		subprocess.call(["touch", os.path.join(self.this_out_dir, "THetA_complete.txt")])
 	def output(self):
@@ -89,7 +95,7 @@ class virtualSNPArray(luigi.Task):
 	def requires(self):
 		self.this_out_dir = os.path.join(self.out_dir, "virtualSNParray")
 		subprocess.call(["mkdir", self.this_out_dir])
-		return {'intervalCountingPipeline': intervalCountingPipeline(name = self.name, out_dir = self.out_dir, download_dir = self.download_dir)}
+		return downloadGenome(name = self.name)
 	def run(self):
 		#run SNP Array
 		norm_bam_extension = subprocess.Popen("cd "  + samples[self.name]['norm_download_dir'] +"; echo $(ls *.bam)", stdout=subprocess.PIPE, shell = True)
@@ -99,7 +105,7 @@ class virtualSNPArray(luigi.Task):
 		normal_bam = os.path.join(samples[self.name]['norm_download_dir'], norm_bam_extension)
 		tumor_bam = os.path.join(samples[self.name]['tumor_download_dir'], tumor_bam_extension)
 
-		snp_dir = os.path.abspath("./PipelineSoftware/virtualSNParray")
+		snp_dir = os.path.abspath("./PipelineSoftware/virtualSNPArray")
 		#HG19 or HG18?
 		ref_assem = samples[self.name]['ref_assem']
 		if ref_assem == "hg19":
@@ -133,13 +139,15 @@ class intervalCountingPipeline(luigi.Task):
 		self.this_out_dir = os.path.join(self.out_dir, "intervalPipeline")
 		subprocess.call(["mkdir", self.this_out_dir])
 		parameter_file_path = os.path.abspath(os.path.join(self.this_out_dir, "parameters.txt"))
-		normal_conc = os.path.join(self.out_dir, "BAMtoGASV_output", "NORMAL", "NORMAL_" + samples[self.name]['norm_prefix'] + ".concordant")
-		tumor_conc = os.path.join(self.out_dir, "BAMtoGASV_output", "TUMOR", "TUMOR_" + samples[self.name]['tumor_prefix'] + ".concordant")
+		normal_conc = os.path.join(self.out_dir, "BAMtoGASV_output", "NORMAL", "NORMAL_" + samples[self.name]['norm_prefix'] + "-lib1.concordant")
+		tumor_conc = os.path.join(self.out_dir, "BAMtoGASV_output", "TUMOR", "TUMOR_" + samples[self.name]['tumor_prefix'] + "-lib1.concordant")
+		#Write parameter file
 		with open(parameter_file_path, "w") as parameter_file:
 			parameter_file.write("IntervalFile: "+ os.path.abspath(self.this_out_dir + "\n"))
 			parameter_file.write("Software: PREGO" + "\n")
 			parameter_file.write("ConcordantFile: " + samples[self.name]['norm_concordant'] + "\n")
 			parameter_file.write("ConcordantFile: " + samples[self.name]['tumor_concordant'])
+		#Run script
 		if subprocess.call(["./pipeline/scripts/runIntervalPipeline.sh", self.this_out_dir, parameter_file_path]) != 0:
 			sys.exit()
 		subprocess.call(["touch", os.path.join(self.this_out_dir, "intervalsDone.txt")])
@@ -166,18 +174,18 @@ class BICSeq(luigi.Task):
 	def run(self):
 		# Takes concordant files as input
 		subprocess.call(["mkdir", self.this_out_dir])	
-		normal_conc = os.path.join(self.out_dir, "BAMtoGASV_output", "NORMAL", "NORMAL_" + samples[self.name]['norm_prefix'] + ".concordant")
-		tumor_conc = os.path.join(self.out_dir, "BAMtoGASV_output", "TUMOR", "TUMOR_" + samples[self.name]['tumor_prefix'] + ".concordant")
+		normal_conc = os.path.join(self.out_dir, "BAMtoGASV_output", "NORMAL", "NORMAL_" + samples[self.name]['norm_prefix'] + "-lib1.concordant")
+		tumor_conc = os.path.join(self.out_dir, "BAMtoGASV_output", "TUMOR", "TUMOR_" + samples[self.name]['tumor_prefix'] + "-lib1.concordant")
 		samples[self.name]['norm_concordant'] = normal_conc
 		samples[self.name]['tumor_concordant'] = tumor_conc
 		bicseq_input_loc = self.this_out_dir #To be created
 		#Run script
-		#if subprocess.call(["./pipeline/scripts/runBICseq.sh", self.this_out_dir, tumor_conc, normal_conc, bicseq_input_loc, self.name]) != 0:
-		#	sys.exit()
+		if subprocess.call(["./pipeline/scripts/runBICseq.sh", self.this_out_dir, tumor_conc, normal_conc, bicseq_input_loc, self.name]) != 0:
+			sys.exit()
 		#Remove input file
-		#subprocess.call(["rm", "-f", os.path.join(self.this_out_dir, "*.input")])
+		subprocess.call(["rm", "-f", os.path.join(self.this_out_dir, "*.input")])
 		#done
-		#subprocess.call(["touch", os.path.join(self.this_out_dir, "BICSeqDone.txt")])
+		subprocess.call(["touch", os.path.join(self.this_out_dir, "BICSeqDone.txt")])
 	def output(self):
 		return luigi.LocalTarget(os.path.join(self.this_out_dir, "BICSeqDone.txt"))
 
@@ -206,11 +214,11 @@ class BAMtoGASV(luigi.Task):
 		normal_bam = os.path.join(samples[self.name]['norm_download_dir'], norm_bam_extension)
 		tumor_bam = os.path.join(samples[self.name]['tumor_download_dir'], tumor_bam_extension)
 		#Run on normal
-		if subprocess.call(["./pipeline/scripts/runBAMtoGASV.sh", normal_dir, normal_bam, "NORMAL"]) != 0:
-			sys.exit(0)
+		#if subprocess.call(["./pipeline/scripts/runBAMtoGASV.sh", normal_dir, normal_bam, samples[self.name]['norm_prefix'], "NORMAL"]) != 0:
+		#	sys.exit(0)
 		#Run on tumor
-		if subprocess.call(["./pipeline/scripts/runBAMtoGASV.sh", tumor_dir, tumor_bam, "TUMOR"]) != 0:
-			sys.exit(0)
+		#if subprocess.call(["./pipeline/scripts/runBAMtoGASV.sh", tumor_dir, tumor_bam, samples[self.name]['tumor_prefix'], "TUMOR"]) != 0:
+		#	sys.exit(0)
 		subprocess.call(["touch", os.path.join(self.this_out_dir, "BAMtoGASVfinished.txt")])		
 	def output(self):
 		return luigi.LocalTarget(os.path.join(self.this_out_dir, "BAMtoGASVfinished.txt"))
@@ -303,7 +311,7 @@ tasks_to_run = []
 # 	else:
 # 		continue
 
-tasks_to_run.append(deleteBAMFiles("TCGA-67-3771"))
+# tasks_to_run.append(deleteBAMFiles("TCGA-67-3771"))
 tasks_to_run.append(deleteBAMFiles("TCGA-A7-A0CE"))
 
 
