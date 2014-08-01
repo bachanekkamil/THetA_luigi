@@ -1,16 +1,5 @@
 #!/bin/bash
 
-#==============================================================================
-#title :		runGASV.sh
-#author:		Gryte Satas
-#date:		2013-09-16
-#description:	runs BAMtoGASV and GASV
-#usage:		runGASV.sh runBAMtoGASV runGASV
-#==============================================================================
-
-
-
-
 runBAMtoGASV=true
 runGASV=true
 

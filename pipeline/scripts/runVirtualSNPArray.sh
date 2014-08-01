@@ -9,6 +9,8 @@ REF_ASSEM=$4
 THIS_DIR=$5
 NAME=$6
 
+memoryOptions="-Xms512m -Xmx32g"
+
 snpconfig=$OUT_DIR/snpconfig.txt
 
 SNP_FILE=""
@@ -34,7 +36,7 @@ echo "BAM_FILE="$bamTumor >> $snpconfig
 
 #Run SNP Counting script
 pushd PipelineSoftware/virtualSNPArray/bin
-java -classpath ".:../jars/sam-1.78.jar" AlleleCounts/getAlleleCounts $snpconfig
+java -classpath ".:../jars/sam-1.78.jar" AlleleCounts/getAlleleCounts $memoryOptions $snpconfig
 popd
 rm $snpconfig
 
