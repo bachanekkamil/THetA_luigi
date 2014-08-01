@@ -2,7 +2,7 @@
 
 This pipeline uses [Luigi](https://github.com/spotify/luigi) to automate the download, processing, and data analysis of THetA. THetA is a software suite that uses cancer genomic structural variation to determine tumor heterogeneity in a sample. 
 
-THetA was written by the [Raphael Lab](http://compbio.cs.brown.edu/) at Brown University.
+THetA was developed and written by the [Raphael Lab](http://compbio.cs.brown.edu/) at Brown University's CCMB.
 
 #Structure
 
@@ -18,7 +18,7 @@ The shell scripts for running each step of the pipeline are in `/pipeline`.
 + CGHub
 + intervalCountingPipeline (for read depth)
 + BAMtoGASV, BICSeq, BICSeqtoTHetA
-+ THetA
++ THetA (as a submodule, since updates are still occurring.)
 + Virtual SNP Array
 	+ SNP files hosted on S3, downloaded in install script.
 
@@ -87,6 +87,8 @@ Some useful configurations with the command line may include:
 
 + `--local-scheduler` : This runs the pipeline without the central planner. Note that you can only use 1 worker if you use the local scheduler.
 + `--workers X` : Runs the pipeline with X workers.
+
+The client.cfg file also configures a run. For example, setting remove-delay=10000 will change the amount of time tasks appear on the web app to 10000s (the default is 600s).
 
 While the pipeline is running, go to `http://localhost:8082` to get a dynamic overview of the pipeline's excecution.
 

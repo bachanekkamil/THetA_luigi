@@ -34,5 +34,18 @@ pip install tornado
 
 echo "Downloading SNP files"
 #Download SNP File
-curl https://s3.amazonaws.com/SNP_Files/AffySNP6.0_hg18.txt.formatted -o PipelineSoftware/virtualSNPArray/AffySNP6.0_hg18.txt.formatted
-curl https://s3.amazonaws.com/SNP_Files/1000G_hg19_snps.tsv -o PipelineSoftware/virtualSNPArray/1000G_hg19_snps.tsv
+if [ ! -f "PipelineSoftware/virtualSNPArray/AffySNP6.0_hg18.txt.formatted" ]; then
+    echo "Downloading hg18 SNPS"
+    curl https://s3.amazonaws.com/SNP_Files/AffySNP6.0_hg18.txt.formatted -o PipelineSoftware/virtualSNPArray/AffySNP6.0_hg18.txt.formatted
+else
+    echo "hg18 SNPs exist, not downloading"
+fi
+if [ ! -f "PipelineSoftware/virtualSNPArray/1000G_hg19_snps.tsv" ]; then
+    echo "Downloading hg19 SNPS"
+    curl https://s3.amazonaws.com/SNP_Files/1000G_hg19_snps.tsv -o PipelineSoftware/virtualSNPArray/1000G_hg19_snps.tsv
+else
+    echo "hg19 SNPS exist, not downloading'
+fi
+
+
+

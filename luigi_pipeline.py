@@ -16,6 +16,9 @@ __version__ = 1.1
 """
 Global variables
 """
+#Add config file to path.
+subprocess.call(["export", LUIGI_CONFIG_PATH=client.cfg])
+
 #Configure things here.
 output_dir = os.path.abspath("./all_outputs")
 download_dir = os.path.abspath("./all_downloads")
@@ -46,7 +49,7 @@ class deleteBAMFiles(luigi.Task):
 	def run(self):
 		#subprocess.call(["rm", "-rf", self.this_download_dir])
 		file = open(os.path.join(self.this_out_dir, "job_summary.txt"), "w")
-		file.write(simplejson.dumps(samples[self.name], indent = 3))	
+		file.write(simplejson.dumps(samples[self.name], indent = 3))
 		file.write(self.time_began + "\n")
 		file.write(strftime("Time finished: %a, %d %b %Y %H:%M:%S", gmtime()))
 		file.close()
@@ -63,9 +66,9 @@ class RunTHetA(luigi.Task):
 	download_dir = luigi.Parameter()
 	this_out_dir = ""
 	def requires(self):
-		self.this_out_dir = os.path.join(self.out_dir, "THetA")		
+		self.this_out_dir = os.path.join(self.out_dir, "THetA")
 		# theta_input_dir = os.path.join(self.this_out_dir, "THetA_input")
- 	# 	subprocess.call(["mkdir", theta_input_dir])	
+ 	# 	subprocess.call(["mkdir", theta_input_dir])
 		return {'BICSeq': BICSeq(name = self.name, out_dir = self.out_dir, download_dir = self.download_dir),
 				'intervalCountingPipeline': intervalCountingPipeline(name = self.name, out_dir = self.out_dir, download_dir = self.download_dir)}
 	def run(self):
@@ -113,7 +116,7 @@ class virtualSNPArray(luigi.Task):
 				sys.exit(0)
 		else:#hg19
 			if subprocess.call(["./pipeline/scripts/runVirtualSNPArray.sh", self.this_out_dir, normal_bam, tumor_bam,  "hg18", snp_dir, self.name]) != 0:
-				sys.exit(0)	
+				sys.exit(0)
 
 		subprocess.call(["touch", os.path.join(self.this_out_dir, "virtualSNPArrayDone.txt")])
 	def output(self):
@@ -131,7 +134,7 @@ class intervalCountingPipeline(luigi.Task):
 	global samples
 	name = luigi.Parameter()
 	out_dir = luigi.Parameter()
-	download_dir = luigi.Parameter()	
+	download_dir = luigi.Parameter()
 	this_out_dir = ""
 	def requires(self):
 		return BAMtoGASV(name = self.name, out_dir = self.out_dir, download_dir = self.download_dir)
@@ -169,11 +172,11 @@ class BICSeq(luigi.Task):
 	download_dir = luigi.Parameter()
 	this_out_dir = ""
 	def requires(self):
-		self.this_out_dir = os.path.join(self.out_dir, "BICSeq")	
+		self.this_out_dir = os.path.join(self.out_dir, "BICSeq")
 		return BAMtoGASV(name = self.name, out_dir = self.out_dir, download_dir = self.download_dir)
 	def run(self):
 		# Takes concordant files as input
-		subprocess.call(["mkdir", self.this_out_dir])	
+		subprocess.call(["mkdir", self.this_out_dir])
 		normal_conc = os.path.join(self.out_dir, "BAMtoGASV_output", "NORMAL", "NORMAL_" + samples[self.name]['norm_prefix'] + "-lib1.concordant")
 		tumor_conc = os.path.join(self.out_dir, "BAMtoGASV_output", "TUMOR", "TUMOR_" + samples[self.name]['tumor_prefix'] + "-lib1.concordant")
 		samples[self.name]['norm_concordant'] = normal_conc
@@ -202,7 +205,7 @@ class BAMtoGASV(luigi.Task):
 		#Run BAMtoGASV
 		subprocess.call(["mkdir", self.out_dir])
 		subprocess.call(["mkdir", self.this_out_dir])
-		normal_dir = os.path.join(self.this_out_dir, "NORMAL") 
+		normal_dir = os.path.join(self.this_out_dir, "NORMAL")
 		tumor_dir = os.path.join(self.this_out_dir, "TUMOR")
 		subprocess.call(["mkdir", normal_dir])
 		subprocess.call(["mkdir", tumor_dir])
@@ -219,7 +222,7 @@ class BAMtoGASV(luigi.Task):
 		#Run on tumor
 		if subprocess.call(["./pipeline/scripts/runBAMtoGASV.sh", tumor_dir, tumor_bam, samples[self.name]['tumor_prefix'], "TUMOR"]) != 0:
 			sys.exit(0)
-		subprocess.call(["touch", os.path.join(self.this_out_dir, "BAMtoGASVfinished.txt")])		
+		subprocess.call(["touch", os.path.join(self.this_out_dir, "BAMtoGASVfinished.txt")])
 	def output(self):
 		return luigi.LocalTarget(os.path.join(self.this_out_dir, "BAMtoGASVfinished.txt"))
 
@@ -233,9 +236,9 @@ class downloadGenome(luigi.Task):
 	pipeline_downloads = pipeline_downloads
 	download_dir = ""
 	def requires(self):
-		pass	
+		pass
 	def run(self):
-		subprocess.call(["mkdir", self.pipeline_downloads])	
+		subprocess.call(["mkdir", self.pipeline_downloads])
 		self.download_dir = os.path.join(self.pipeline_downloads, self.name)
 		subprocess.call(["mkdir", self.download_dir])
 		normal_dir = os.path.join(self.download_dir, "NORMAL")
@@ -256,7 +259,7 @@ class downloadGenome(luigi.Task):
 		normal_hash = normal_hash.communicate()[0].strip()
 		tumor_hash = tumor_hash.communicate()[0].strip()
 		samples[self.name]['norm_download_dir'] = os.path.join(samples[self.name]['norm_download_dir'], normal_hash)
-		samples[self.name]['tumor_download_dir'] = os.path.join(samples[self.name]['tumor_download_dir'], tumor_hash)		
+		samples[self.name]['tumor_download_dir'] = os.path.join(samples[self.name]['tumor_download_dir'], tumor_hash)
 		subprocess.call(["touch", os.path.join(self.download_dir, self.name + "downloadComplete.txt")])
 	def output(self):
 		return luigi.LocalTarget(os.path.join(self.download_dir, self.name + "downloadComplete.txt"))

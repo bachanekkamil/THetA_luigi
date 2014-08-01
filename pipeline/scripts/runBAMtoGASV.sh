@@ -13,7 +13,7 @@ pushd $INOUT_DIR
 #Rename files so that other scripts know where the concordant files are.
 
 
-if [$NORMAL == "NORMAL"]; then
+if [ $NORMAL == "NORMAL" ]; then
 	for i in NORMAL*lib*
 	do
 	   mv $i `echo $i | sed -e 's/NORMAL_.*-lib/NORMAL_'$PREFIX'-lib/'`
