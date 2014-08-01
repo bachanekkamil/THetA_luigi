@@ -1,0 +1,29 @@
+#!/bin/bash
+
+#Compile software
+pushd PipelineSoftware/bam2gasv
+	make
+popd
+
+pushd PipelineSoftware/gasv
+	./install
+popd
+
+pushd PipelineSoftware/intervalCountingPipeline
+	./install
+popd
+
+pushd PipelineSoftware/theta
+	./install
+popd
+
+pushd PipelineSoftware/virtualSNPArray
+	mkdir bin
+	javac java/*.java -classpath ".:jars/sam-1.78.jar" -d bin
+popd
+
+#Install luigi and tornado
+pip install luigi
+pip install tornado
+
+#Download SNP File

@@ -78,6 +78,43 @@ class RunTHetA(luigi.Task):
 		return luigi.LocalTarget(os.path.join(self.this_out_dir, "THetA_complete.txt"))
 
 #############################################################################################################
+#Virtual SNP Array
+#############################################################################################################
+
+class virtualSNPArray(luigi.Task):
+	name = luigi.Parameter()
+	out_dir = luigi.Parameter()
+	download_dir = luigi.Parameter()
+	this_out_dir = ""
+	def requires(self):
+		self.this_out_dir = os.path.join(self.out_dir, "virtualSNParray")
+		subprocess.call(["mkdir", self.this_out_dir])
+		return {'intervalCountingPipeline': intervalCountingPipeline(name = self.name, out_dir = self.out_dir, download_dir = self.download_dir)}
+	def run(self):
+		#run SNP Array
+		norm_bam_extension = subprocess.Popen("cd "  + samples[self.name]['norm_download_dir'] +"; echo $(ls *.bam)", stdout=subprocess.PIPE, shell = True)
+		tumor_bam_extension = subprocess.Popen("cd " + samples[self.name]['tumor_download_dir'] + "; echo $(ls *.bam)", stdout=subprocess.PIPE,shell = True)
+		norm_bam_extension = norm_bam_extension.communicate()[0].strip()
+		tumor_bam_extension = tumor_bam_extension.communicate()[0].strip()
+		normal_bam = os.path.join(samples[self.name]['norm_download_dir'], norm_bam_extension)
+		tumor_bam = os.path.join(samples[self.name]['tumor_download_dir'], tumor_bam_extension)
+
+		snp_dir = os.path.abspath("./PipelineSoftware/virtualSNParray")
+		#HG19 or HG18?
+		ref_assem = samples[self.name]['ref_assem']
+		if ref_assem == "hg19":
+			if subprocess.call(["./pipeline/scripts/runVirtualSNPArray.sh", self.this_out_dir, normal_bam, tumor_bam, "hg19", snp_dir, self.name]) != 0:
+				sys.exit(0)
+		else:#hg19
+			if subprocess.call(["./pipeline/scripts/runVirtualSNPArray.sh", self.this_out_dir, normal_bam, tumor_bam,  "hg18", snp_dir, self.name]) != 0:
+				sys.exit(0)	
+
+		subprocess.call(["touch", os.path.join(self.this_out_dir, "virtualSNPArrayDone.txt")])
+	def output(self):
+		return luigi.LocalTarget(os.path.join(self.this_out_dir, "virtualSNPArrayDone.txt"))
+
+
+#############################################################################################################
 #Define the main workflow dependency graph.
 #############################################################################################################
 
@@ -162,7 +199,6 @@ class BAMtoGASV(luigi.Task):
 		subprocess.call(["mkdir", normal_dir])
 		subprocess.call(["mkdir", tumor_dir])
 		#Get the names of the bam files.
-		print "#######" + samples[self.name]['norm_download_dir']
 		norm_bam_extension = subprocess.Popen("cd "  + samples[self.name]['norm_download_dir'] +"; echo $(ls *.bam)", stdout=subprocess.PIPE, shell = True)
 		tumor_bam_extension = subprocess.Popen("cd " + samples[self.name]['tumor_download_dir'] + "; echo $(ls *.bam)", stdout=subprocess.PIPE,shell = True)
 		norm_bam_extension = norm_bam_extension.communicate()[0].strip()
