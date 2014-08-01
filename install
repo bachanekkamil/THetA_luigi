@@ -32,5 +32,7 @@ echo "Verifying python dependencies"
 pip install luigi
 pip install tornado
 
+echo "Downloading SNP files"
 #Download SNP File
-
+curl https://s3.amazonaws.com/SNP_Files/AffySNP6.0_hg18.txt.formatted -o PipelineSoftware/virtualSNPArray/AffySNP6.0_hg18.txt.formatted
+curl https://s3.amazonaws.com/SNP_Files/1000G_hg19_snps.tsv -o PipelineSoftware/virtualSNPArray/1000G_hg19_snps.tsv

@@ -93,7 +93,7 @@ class virtualSNPArray(luigi.Task):
 	download_dir = luigi.Parameter()
 	this_out_dir = ""
 	def requires(self):
-		self.this_out_dir = os.path.join(self.out_dir, "virtualSNParray")
+		self.this_out_dir = os.path.join(self.out_dir, "virtualSNPArray")
 		subprocess.call(["mkdir", self.this_out_dir])
 		return downloadGenome(name = self.name)
 	def run(self):
@@ -214,11 +214,11 @@ class BAMtoGASV(luigi.Task):
 		normal_bam = os.path.join(samples[self.name]['norm_download_dir'], norm_bam_extension)
 		tumor_bam = os.path.join(samples[self.name]['tumor_download_dir'], tumor_bam_extension)
 		#Run on normal
-		#if subprocess.call(["./pipeline/scripts/runBAMtoGASV.sh", normal_dir, normal_bam, samples[self.name]['norm_prefix'], "NORMAL"]) != 0:
-		#	sys.exit(0)
+		if subprocess.call(["./pipeline/scripts/runBAMtoGASV.sh", normal_dir, normal_bam, samples[self.name]['norm_prefix'], "NORMAL"]) != 0:
+			sys.exit(0)
 		#Run on tumor
-		#if subprocess.call(["./pipeline/scripts/runBAMtoGASV.sh", tumor_dir, tumor_bam, samples[self.name]['tumor_prefix'], "TUMOR"]) != 0:
-		#	sys.exit(0)
+		if subprocess.call(["./pipeline/scripts/runBAMtoGASV.sh", tumor_dir, tumor_bam, samples[self.name]['tumor_prefix'], "TUMOR"]) != 0:
+			sys.exit(0)
 		subprocess.call(["touch", os.path.join(self.this_out_dir, "BAMtoGASVfinished.txt")])		
 	def output(self):
 		return luigi.LocalTarget(os.path.join(self.this_out_dir, "BAMtoGASVfinished.txt"))

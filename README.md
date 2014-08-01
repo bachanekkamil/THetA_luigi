@@ -1,16 +1,18 @@
 #THetA pipeline
 
-This pipeline uses [Luigi](https://github.com/spotify/luigi) to automate the download, processing, and data analysis of files related to THetA. THetA is a software suite that exploits cancer genomic structural variation to determine tumor heterogeneity in a sample. 
+This pipeline uses [Luigi](https://github.com/spotify/luigi) to automate the download, processing, and data analysis of THetA. THetA is a software suite that uses cancer genomic structural variation to determine tumor heterogeneity in a sample. 
 
 THetA was written by the [Raphael Lab](http://compbio.cs.brown.edu/) at Brown University.
 
-![Sample output](/path/to/image)
-
-![Dependency chart](/path/to/image)
-
 #Structure
 
-Use `./install` to ensure the correct dependencies and to generate the `.class` files.
+Use `./install` to ensure the correct dependencies, download the SNP files, and to generate the `.class` files.
+
+The pipeline code is in `luigi_pipeline.py`. 
+
+The executables for each software component are in `/pipelineSoftware`.
+
+The shell scripts for running each step of the pipeline are in `/pipeline`. 
 
 ##Included software
 + CGHub
@@ -18,15 +20,47 @@ Use `./install` to ensure the correct dependencies and to generate the `.class` 
 + BAMtoGASV, BICSeq, BICSeqtoTHetA
 + THetA
 + Virtual SNP Array
-	+ Download `all_snps.tsv` from [HERE-add link](some/link) (Or maybe generate it?)
+	+ SNP files hosted on S3, downloaded in install script.
 
-The pipeline code is in `luigi_pipeline.py`. 
+##Dependency chart
 
-The scripts for downloading `.bam` files are in `/CGHub`.
+![Dependency Chart](PipelineSoftware/dep_chart.png)
 
-The executables for each software component are in `/pipelineSoftware`.
+##Output structure
 
-The shell scripts for running each step of the pipeline are in `/pipeline`. 
+	all_downloads
+	`-- a_genome
+	    |-- NORMAL
+	    |   `-- downloadHash
+	    |       |-- normal_genome.bam
+	    |       `-- normal_genome.bam.bai
+	    `-- TUMOR
+	        `-- downloadHash
+	            |-- tumor_genome.bam
+	            `-- tumor_genome.bam.bai
+	            
+	all_outputs
+	`-- a_genome
+	    |-- BAMtoGASV_output
+	    |   |-- NORMAL
+	    |   |   |-- NORMAL.a_genome-lib1.concordant
+	    |   |   |-- NORMAL.a_genome-lib1.deletion
+	    |   |   |-- NORMAL.a_genome-lib1.divergent
+	    |   |   |-- NORMAL.a_genome-lib1.inversion
+	    |   |   `-- NORMAL.a_genome-lib1.translocation
+	    |   `-- TUMOR
+	    |       `-- same_as_NORMAL
+	    |-- BICSeq
+	    |   |-- a_genome.bicseg
+	    |   `-- bicseq_outputs
+	    |-- intervalPipeline
+	    |   `-- a_genome.txt.processed
+	    |-- THetA
+	    |   |-- a_genome.n2.pdf
+	    |   |-- a_genome.n2.results
+	    |   `-- a_genome.N_processed
+	    `-- virtualSNPArray
+	        `-- a_genome.BAlleleFreqs
 
 #Execution
 
