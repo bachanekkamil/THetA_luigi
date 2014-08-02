@@ -17,7 +17,7 @@ __version__ = 1.1
 Global variables
 """
 #Add config file to path.
-subprocess.call(["export", LUIGI_CONFIG_PATH=client.cfg])
+os.environ["LUIGI_CONFIG_PATH"] ="client.cfg"
 
 #Configure things here.
 output_dir = os.path.abspath("./all_outputs")

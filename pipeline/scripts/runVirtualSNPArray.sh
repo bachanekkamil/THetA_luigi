@@ -36,7 +36,7 @@ echo "BAM_FILE="$bamTumor >> $snpconfig
 
 #Run SNP Counting script
 pushd PipelineSoftware/virtualSNPArray/bin
-java -classpath ".:../jars/sam-1.78.jar" AlleleCounts/getAlleleCounts $memoryOptions $snpconfig
+java $memoryOptions -classpath ".:../jars/sam-1.78.jar" AlleleCounts/getAlleleCounts $snpconfig
 popd
 rm $snpconfig
 

@@ -9,7 +9,7 @@ NORMAL=$4
 
 echo "Running bam2gasv"
 pushd $INOUT_DIR
-./../../../../PipelineSoftware/bam2gasv/bin/bam2gasv $BAM_FILE_PATH -WRITE_CONCORDANT true -MAPPING_QUALITY 30 -OUTPUT_PREFIX $PREFIX
+./../../../../PipelineSoftware/bam2gasv/bin/bam2gasv $BAM_FILE_PATH -WRITE_CONCORDANT true -MAPPING_QUALITY 30 -OUTPUT_PREFIX $NORMAL
 #Rename files so that other scripts know where the concordant files are.
 
 
