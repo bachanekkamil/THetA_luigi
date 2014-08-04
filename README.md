@@ -86,9 +86,7 @@ Start the pipeline by running `python luigi_pipeline.py`. The pipeline will star
 Some useful configurations with the command line may include:
 
 + `--local-scheduler` : This runs the pipeline without the central planner. Note that you can only use 1 worker if you use the local scheduler.
-+ `--workers X` : Runs the pipeline with X workers.
-
-The client.cfg file also configures a run. For example, setting remove-delay=10000 will change the amount of time tasks appear on the web app to 10000s (the default is 600s).
++ `--workers X` : Runs the pipeline with X workers. By default, it runs with 16 workers.
 
 While the pipeline is running, go to `http://localhost:8082` to get a dynamic overview of the pipeline's excecution.
 

@@ -24,7 +24,7 @@ fi
 touch $snpconfig
 echo "SNP_FILE="$SNP_FILE > $snpconfig
 #The output prefix also codes for the path to the file.
-echo "OUTPUT_PREFIX=$OUT_DIR/$NAME.BAF" >> $snpconfig
+echo "OUTPUT_PREFIX=$OUT_DIR/$NAME" >> $snpconfig
 echo "BAM_FILE="$bamNormal >> $snpconfig
 echo "BAM_FILE="$bamTumor >> $snpconfig
 
@@ -40,7 +40,7 @@ java $memoryOptions -classpath ".:../jars/sam-1.78.jar" AlleleCounts/getAlleleCo
 popd
 rm $snpconfig
 
-SNP_FILE_LOC=$(ls *.BAlleleFreqs $OUT_DIR)
+SNP_FILE_LOC=$(ls $OUT_DIR/*.BAlleleFreqs)
 
 pushd pipeline/scripts
 python filterSNPs.py SNP_FILE_LOC

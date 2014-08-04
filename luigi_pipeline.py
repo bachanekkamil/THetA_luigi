@@ -1,10 +1,25 @@
 import luigi
+from luigi import worker, scheduler, rpc
 import subprocess
 import glob
 import os
 import sys
 from time import strftime, gmtime
 import simplejson
+import argparse
+
+
+###Parse for number of workers
+
+def parse_arguments(silent=False):
+	parser = argparse.ArgumentParser()
+	parser.add_argument("--NUM_WORKERS", required=False, default=16)
+	args = parser.parse_args()
+	
+	num_workers = args.NUM_WORKERS
+
+	return num_workers
+
 
 #############################################################################################################
 #This pipeline automates genome downloading and processing from CGHub. The bottom of the file is the head of the graph.
@@ -47,7 +62,7 @@ class deleteBAMFiles(luigi.Task):
 		return {"RunTHetA":RunTHetA(name = self.name, out_dir = self.this_out_dir, download_dir = self.this_download_dir),
 				"virtualSNPArray":virtualSNPArray(name = self.name, out_dir = self.this_out_dir, download_dir = self.this_download_dir)}
 	def run(self):
-		#subprocess.call(["rm", "-rf", self.this_download_dir])
+		subprocess.call(["rm", "-rf", self.this_download_dir])
 		file = open(os.path.join(self.this_out_dir, "job_summary.txt"), "w")
 		file.write(simplejson.dumps(samples[self.name], indent = 3))
 		file.write(self.time_began + "\n")
@@ -67,8 +82,8 @@ class RunTHetA(luigi.Task):
 	this_out_dir = ""
 	def requires(self):
 		self.this_out_dir = os.path.join(self.out_dir, "THetA")
-		# theta_input_dir = os.path.join(self.this_out_dir, "THetA_input")
- 	# 	subprocess.call(["mkdir", theta_input_dir])
+		# theta_input_dir = os.path.join(self.this_out_dir, "THetA_input"
+		#subprocess.call(["mkdir", theta_input_dir])
 		return {'BICSeq': BICSeq(name = self.name, out_dir = self.out_dir, download_dir = self.download_dir),
 				'intervalCountingPipeline': intervalCountingPipeline(name = self.name, out_dir = self.out_dir, download_dir = self.download_dir)}
 	def run(self):
@@ -78,6 +93,7 @@ class RunTHetA(luigi.Task):
 		#Get read depth file location (_processed)
 		intervalPipeline_dir = os.path.join(self.out_dir, "intervalPipeline")
 		processed_file = subprocess.Popen("cd "  + intervalPipeline_dir +"; echo $(ls *_processed)", stdout=subprocess.PIPE, shell = True)
+		processed_file = processed_file.communicate()[0].strip()
 		processed_file_loc = os.path.join(intervalPipeline_dir, processed_file)
 		#Run THETA!!!
 		if subprocess.call(["./pipeline/scripts/runTHetA.sh", bicseq_output_loc, self.name, self.this_out_dir, processed_file_loc]) != 0:
@@ -97,10 +113,10 @@ class virtualSNPArray(luigi.Task):
 	this_out_dir = ""
 	def requires(self):
 		self.this_out_dir = os.path.join(self.out_dir, "virtualSNPArray")
-		subprocess.call(["mkdir", self.this_out_dir])
 		return downloadGenome(name = self.name)
 	def run(self):
 		#run SNP Array
+		subprocess.call(["mkdir", self.this_out_dir])
 		norm_bam_extension = subprocess.Popen("cd "  + samples[self.name]['norm_download_dir'] +"; echo $(ls *.bam)", stdout=subprocess.PIPE, shell = True)
 		tumor_bam_extension = subprocess.Popen("cd " + samples[self.name]['tumor_download_dir'] + "; echo $(ls *.bam)", stdout=subprocess.PIPE,shell = True)
 		norm_bam_extension = norm_bam_extension.communicate()[0].strip()
@@ -248,11 +264,11 @@ class downloadGenome(luigi.Task):
 		subprocess.call(["mkdir", normal_dir])
 		subprocess.call(["mkdir", tumor_dir])
 		#Download normal
-		#if subprocess.call(["./PipelineSoftware/CGHub/runGeneTorrentNew.bash", samples[self.name]['norm_aurid'], normal_dir]) != 0:
-		#	sys.exit(0)
+		if subprocess.call(["./PipelineSoftware/CGHub/runGeneTorrentNew.bash", samples[self.name]['norm_aurid'], normal_dir]) != 0:
+			sys.exit(0)
 		#Download tumor
-		#if subprocess.call(["./PipelineSoftware/CGHub/runGeneTorrentNew.bash", samples[self.name]['tumor_aurid'], tumor_dir]) !=0:
-		#	sys.exit(0)
+		if subprocess.call(["./PipelineSoftware/CGHub/runGeneTorrentNew.bash", samples[self.name]['tumor_aurid'], tumor_dir]) !=0:
+			sys.exit(0)
 		#Add the name of the download hash directory to the directory name.
 		normal_hash = subprocess.Popen("cd " + normal_dir + "; echo $(ls -d */)", stdout=subprocess.PIPE, shell = True)
 		tumor_hash = subprocess.Popen("cd " + tumor_dir + "; echo $(ls -d */)", stdout=subprocess.PIPE,shell = True)
@@ -269,16 +285,16 @@ class downloadGenome(luigi.Task):
 #Run Pipeline
 #############################################################################################################
 
-class TriggerAll(luigi.Task):
-	global tasks_to_run
-	def requires(self):
-		for task in tasks_to_run:
-			yield task
-	def run(self):
-		# subprocess.call(["touch", "pipelineComplete.txt"])
-		pass
-	def output(self):
-		return luigi.LocalTarget("pipelineComplete.txt")
+# class TriggerAll(luigi.Task):
+# 	global tasks_to_run
+# 	def requires(self):
+# 		for task in tasks_to_run:
+# 			yield task
+# 	def run(self):
+# 		# subprocess.call(["touch", "pipelineComplete.txt"])
+# 		pass
+# 	def output(self):
+# 		return luigi.LocalTarget("pipelineComplete.txt")
 
 #############################################################################################################
 #Set up the internal data usage format
@@ -307,14 +323,20 @@ except:
 
 #Create tasks_to_run from samples.
 tasks_to_run = []
-# for name in samples.keys():
-# 	#Only keep TCGA ones. We don't seem to have permission to download the TARGET ones.
-# 	if "TCGA" in name:
-# 		tasks_to_run.append(deleteBAMFiles(name))
-# 	else:
-# 		continue
+for name in samples.keys():
+	#Only keep TCGA ones. We don't seem to have permission to download the TARGET ones.
+	if "TCGA" in name:
+		tasks_to_run.append(deleteBAMFiles(name))
+	else:
+		continue
 
-# tasks_to_run.append(deleteBAMFiles("TCGA-67-3771"))
-tasks_to_run.append(deleteBAMFiles("TCGA-A7-A0CE"))
 
-luigi.build([TriggerAll()], workers=1)
+#Run with workers
+
+# tasks_to_run.append(deleteBAMFiles("TCGA-A7-A0CE"))
+
+luigi.build(tasks_to_run, workers=16, scheduler_port=8082)
+
+# if name == '__main__':
+# 	luigi.run()
+
