@@ -90,8 +90,28 @@ Some useful configurations with the command line may include:
 
 While the pipeline is running, go to `http://localhost:8082` to get a dynamic overview of the pipeline's excecution.
 
+#Technical Details
 
+Each script is set up as a Task, which is a class comprised of Parameters and requires(), run(), and output() methods. 
 
++ Parameters: Wrappers around some data value which is passed around between tasks.
++ `requires()`: The other preceding Task(s) that is/are "required" before this Task is run.
++ `run()`: The code that defines a "run" of this Task. Usually, this sets up the correct paths and runs a shell script.
++ `output()`: Return the local data file that signals the completion of the Task. This is wrapped in a LocalTarget.
 
+The order of execution is `requires() -> run() -> output()`.
 
+There are many other classes for Hadoop and recurrent pipelines, which are in the documentation if necessary.
 
+##Important tidbits
++ Instance variables do not update across methods. This leads to some subtle bugs if output relies on some updated value, because the output file will be in a different location and the Task will seem to have never finished.
++ If the output for a Task already exists, the `run()` method will not be executed and Luigi will continue.
++ The browser must be open on the machine that the server is running on.
++ In order to stop the pipeline on a bad shell script run, the construction `if *my subprocess.call([])* != 0` is used.
++ Parameters can only be unpacked in methods, not in the constructor. Parameters are passed as `kwargs`.
++ Workers can be configured to have multiple processes by constructing them in the code, e.g. `w = Worker.worker(num_processes=8)`.
++ It's better not to have a "TriggerAll" class because the dependency graph becomes incomprehensibly dense. Instead, the pipeline is kicked off by a list of top-level Tasks which are divided among the worker pool.
++ It's much more fool-proof to make each Task have an output of some sort (otherwise you have to do some hacking with the optional `complete()` method). Even if a Task does not work with local files, make it `touch` some dummy file and return that as output.
++ Keeping the heavy-lifting of the run method in shell script keeps code modular and makes testing easier. It's easier to isolate actual pipeline problems when you're sure that your `runX` script works. Try to keep the ratio of Tasks to shell scripts 1 to 1.
++ The top-level task should be triggered first. It is not run until the very end, but the `requires()` method triggers a cascade that reaches down to the lowest-level Task. Presumably, this requires no other Tasks or just some local Target, so it will terminate the cascade and execute `run()`.
++ If you want to debug the code, make a new JSON file that contains only one genome's info.

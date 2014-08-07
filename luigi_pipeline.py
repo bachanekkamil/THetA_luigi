@@ -11,14 +11,14 @@ import argparse
 
 ###Parse for number of workers
 
-def parse_arguments(silent=False):
-	parser = argparse.ArgumentParser()
-	parser.add_argument("--NUM_WORKERS", required=False, default=16)
-	args = parser.parse_args()
+# def parse_arguments(silent=False):
+# 	parser = argparse.ArgumentParser()
+# 	parser.add_argument("--NUM_WORKERS", required=False, default=16)
+# 	args = parser.parse_args()
 	
-	num_workers = args.NUM_WORKERS
+# 	num_workers = args.NUM_WORKERS
 
-	return num_workers
+# 	return num_workers
 
 
 #############################################################################################################
@@ -69,6 +69,7 @@ class deleteBAMFiles(luigi.Task):
 		file.write(strftime("Time finished: %a, %d %b %Y %H:%M:%S", gmtime()))
 		file.close()
 	def output(self):
+		print self.this_out_dir
 		return luigi.LocalTarget(os.path.join(self.this_out_dir, "job_summary.txt"))
 
 
@@ -76,10 +77,11 @@ class deleteBAMFiles(luigi.Task):
 #RunTheta depends on the intervalCountingPipeline and BICSeqToTHetA.
 #############################################################################################################
 class RunTHetA(luigi.Task):
+	global samples
 	name = luigi.Parameter()
-	out_dir = luigi.Parameter()
+	out_dir = luigi.Parameter
 	download_dir = luigi.Parameter()
-	this_out_dir = ""
+	this_out_dir = ""	
 	def requires(self):
 		self.this_out_dir = os.path.join(self.out_dir, "THetA")
 		# theta_input_dir = os.path.join(self.this_out_dir, "THetA_input"
@@ -91,31 +93,33 @@ class RunTHetA(luigi.Task):
 		subprocess.call(["mkdir", self.this_out_dir])
 		bicseq_output_loc = os.path.join(self.out_dir, "BICSeq/output", self.name + ".bicseg")
 		#Get read depth file location (_processed)
-		intervalPipeline_dir = os.path.join(self.out_dir, "intervalPipeline")
+		intervalPipeline_dir = os.path.join(self.out_dir, "intervalPipeline")thecowgoesmoo1!
+		
 		processed_file = subprocess.Popen("cd "  + intervalPipeline_dir +"; echo $(ls *_processed)", stdout=subprocess.PIPE, shell = True)
 		processed_file = processed_file.communicate()[0].strip()
 		processed_file_loc = os.path.join(intervalPipeline_dir, processed_file)
 		#Run THETA!!!
 		if subprocess.call(["./pipeline/scripts/runTHetA.sh", bicseq_output_loc, self.name, self.this_out_dir, processed_file_loc]) != 0:
 			sys.exit()
-		subprocess.call(["touch", os.path.join(self.this_out_dir, "THetA_complete.txt")])
+		subprocess.call(["touch", os.path.join(self.download_dir, "THetA_complete.txt")])
 	def output(self):
-		return luigi.LocalTarget(os.path.join(self.this_out_dir, "THetA_complete.txt"))
+		return luigi.LocalTarget(os.path.join(self.download_dir, "THetA_complete.txt"))
 
 #############################################################################################################
 #Virtual SNP Array
 #############################################################################################################
 
 class virtualSNPArray(luigi.Task):
+	global samples
 	name = luigi.Parameter()
 	out_dir = luigi.Parameter()
 	download_dir = luigi.Parameter()
-	this_out_dir = ""
+	this_out_dir = ""	
 	def requires(self):
-		self.this_out_dir = os.path.join(self.out_dir, "virtualSNPArray")
-		return downloadGenome(name = self.name)
+		return downloadGenome(name = self.name, download_dir = self.download_dir)
 	def run(self):
 		#run SNP Array
+		self.this_out_dir = os.path.join(self.out_dir, "virtualSNPArray")
 		subprocess.call(["mkdir", self.this_out_dir])
 		norm_bam_extension = subprocess.Popen("cd "  + samples[self.name]['norm_download_dir'] +"; echo $(ls *.bam)", stdout=subprocess.PIPE, shell = True)
 		tumor_bam_extension = subprocess.Popen("cd " + samples[self.name]['tumor_download_dir'] + "; echo $(ls *.bam)", stdout=subprocess.PIPE,shell = True)
@@ -134,9 +138,9 @@ class virtualSNPArray(luigi.Task):
 			if subprocess.call(["./pipeline/scripts/runVirtualSNPArray.sh", self.this_out_dir, normal_bam, tumor_bam,  "hg18", snp_dir, self.name]) != 0:
 				sys.exit(0)
 
-		subprocess.call(["touch", os.path.join(self.this_out_dir, "virtualSNPArrayDone.txt")])
+		subprocess.call(["touch", os.path.join(self.download_dir, "virtualSNPArrayDone.txt")])
 	def output(self):
-		return luigi.LocalTarget(os.path.join(self.this_out_dir, "virtualSNPArrayDone.txt"))
+		return luigi.LocalTarget(os.path.join(self.download_dir, "virtualSNPArrayDone.txt"))
 
 
 #############################################################################################################
@@ -151,7 +155,7 @@ class intervalCountingPipeline(luigi.Task):
 	name = luigi.Parameter()
 	out_dir = luigi.Parameter()
 	download_dir = luigi.Parameter()
-	this_out_dir = ""
+	this_out_dir = ""	
 	def requires(self):
 		return BAMtoGASV(name = self.name, out_dir = self.out_dir, download_dir = self.download_dir)
 	def run(self):
@@ -169,10 +173,10 @@ class intervalCountingPipeline(luigi.Task):
 		#Run script
 		if subprocess.call(["./pipeline/scripts/runIntervalPipeline.sh", self.this_out_dir, parameter_file_path]) != 0:
 			sys.exit()
-		subprocess.call(["touch", os.path.join(self.this_out_dir, "intervalsDone.txt")])
+		subprocess.call(["touch", os.path.join(self.download_dir, "intervalsDone.txt")])
 	def output(self):
 		#????????????????
-		return luigi.LocalTarget(os.path.join(self.this_out_dir, "intervalsDone.txt"))
+		return luigi.LocalTarget(os.path.join(self.download_dir, "intervalsDone.txt"))
 	# def complete(self):
 	# 	return True
 
@@ -186,7 +190,7 @@ class BICSeq(luigi.Task):
 	name = luigi.Parameter()
 	out_dir = luigi.Parameter()
 	download_dir = luigi.Parameter()
-	this_out_dir = ""
+	this_out_dir = ""	
 	def requires(self):
 		self.this_out_dir = os.path.join(self.out_dir, "BICSeq")
 		return BAMtoGASV(name = self.name, out_dir = self.out_dir, download_dir = self.download_dir)
@@ -204,9 +208,9 @@ class BICSeq(luigi.Task):
 		#Remove input file
 		subprocess.call(["rm", "-f", os.path.join(self.this_out_dir, "*.input")])
 		#done
-		subprocess.call(["touch", os.path.join(self.this_out_dir, "BICSeqDone.txt")])
+		subprocess.call(["touch", os.path.join(self.download_dir, "BICSeqDone.txt")])
 	def output(self):
-		return luigi.LocalTarget(os.path.join(self.this_out_dir, "BICSeqDone.txt"))
+		return luigi.LocalTarget(os.path.join(self.download_dir, "BICSeqDone.txt"))
 
 class BAMtoGASV(luigi.Task):
 	global samples
@@ -215,10 +219,10 @@ class BAMtoGASV(luigi.Task):
 	download_dir = luigi.Parameter()
 	this_out_dir = ""
 	def requires(self):
-		self.this_out_dir = os.path.join(self.out_dir, "BAMtoGASV_output")
-		return downloadGenome(name = self.name)
+		return downloadGenome(name = self.name, download_dir = self.download_dir)
 	def run(self):
 		#Run BAMtoGASV
+		self.this_out_dir = os.path.join(self.out_dir, "BAMtoGASV_output")
 		subprocess.call(["mkdir", self.out_dir])
 		subprocess.call(["mkdir", self.this_out_dir])
 		normal_dir = os.path.join(self.this_out_dir, "NORMAL")
@@ -238,9 +242,9 @@ class BAMtoGASV(luigi.Task):
 		#Run on tumor
 		if subprocess.call(["./pipeline/scripts/runBAMtoGASV.sh", tumor_dir, tumor_bam, samples[self.name]['tumor_prefix'], "TUMOR"]) != 0:
 			sys.exit(0)
-		subprocess.call(["touch", os.path.join(self.this_out_dir, "BAMtoGASVfinished.txt")])
+		subprocess.call(["touch", os.path.join(self.download_dir, "BAMtoGASVfinished.txt")])
 	def output(self):
-		return luigi.LocalTarget(os.path.join(self.this_out_dir, "BAMtoGASVfinished.txt"))
+		return luigi.LocalTarget(os.path.join(self.download_dir, "BAMtoGASVfinished.txt"))
 
 #############################################################################################################
 #Head of the stream. Download a file from CGHub.
@@ -250,9 +254,7 @@ class downloadGenome(luigi.Task):
 	global samples
 	name = luigi.Parameter()
 	pipeline_downloads = pipeline_downloads
-	download_dir = ""
-	def requires(self):
-		pass
+	download_dir = luigi.Parameter()
 	def run(self):
 		subprocess.call(["mkdir", self.pipeline_downloads])
 		self.download_dir = os.path.join(self.pipeline_downloads, self.name)
