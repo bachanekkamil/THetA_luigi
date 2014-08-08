@@ -125,9 +125,13 @@ class virtualSNPArray(luigi.Task):
 		tumor_bam_extension = subprocess.Popen("cd " + samples[self.name]['tumor_download_dir'] + "; echo $(ls *.bam)", stdout=subprocess.PIPE,shell = True)
 		norm_bam_extension = norm_bam_extension.communicate()[0].strip()
 		tumor_bam_extension = tumor_bam_extension.communicate()[0].strip()
-		normal_bam = os.path.join(samples[self.name]['norm_download_dir'], norm_bam_extension)
-		tumor_bam = os.path.join(samples[self.name]['tumor_download_dir'], tumor_bam_extension)
-
+			paths_file = os.path.join(self.download_dir, self.name, "downloadComplete.txt")
+		lines = []
+		with self.input().open('r') as in_file:
+			lines = in_file.readlines()
+		lines = [a_dir.strip() for a_dir in lines]
+		normal_bam = os.path.join(lines[0], norm_bam_extension) #os.path.join(samples[self.name]['norm_download_dir'], norm_bam_extension)
+		tumor_bam = os.path.join(lines[1], tumor_bam_extension) #os.path.join(samples[self.name]['tumor_download_dir'], tumor_bam_extension)
 		snp_dir = os.path.abspath("./PipelineSoftware/virtualSNPArray")
 		#HG19 or HG18?
 		ref_assem = samples[self.name]['ref_assem']
@@ -235,7 +239,6 @@ class BAMtoGASV(luigi.Task):
 		with self.input().open('r') as in_file:
 			lines = in_file.readlines()
 		lines = [a_dir.strip() for a_dir in lines]
-		print lines[0] + "#$*O&^#*(&$^#&*($^&*(#^$*^#&*($^*(#^$&*((#&*$"
 		#Get the names of the bam files.
 		# norm_bam_extension = subprocess.Popen("cd "  + samples[self.name]['norm_download_dir'] +"; echo $(ls *.bam)", stdout=subprocess.PIPE, shell = True)
 		# tumor_bam_extension = subprocess.Popen("cd " + samples[self.name]['tumor_download_dir'] + "; echo $(ls *.bam)", stdout=subprocess.PIPE,shell = True)
@@ -273,11 +276,11 @@ class downloadGenome(luigi.Task):
 		subprocess.call(["mkdir", normal_dir])
 		subprocess.call(["mkdir", tumor_dir])
 		#Download normal
-		# if subprocess.call(["./PipelineSoftware/CGHub/runGeneTorrentNew.bash", samples[self.name]['norm_aurid'], normal_dir]) != 0:
-		# 	sys.exit(0)
+		if subprocess.call(["./PipelineSoftware/CGHub/runGeneTorrentNew.bash", samples[self.name]['norm_aurid'], normal_dir]) != 0:
+			sys.exit(0)
 		#Download tumor
-		# if subprocess.call(["./PipelineSoftware/CGHub/runGeneTorrentNew.bash", samples[self.name]['tumor_aurid'], tumor_dir]) !=0:
-		# 	sys.exit(0)
+		if subprocess.call(["./PipelineSoftware/CGHub/runGeneTorrentNew.bash", samples[self.name]['tumor_aurid'], tumor_dir]) !=0:
+			sys.exit(0)
 		#Add the name of the download hash directory to the directory name.
 		normal_hash = subprocess.Popen("cd " + normal_dir + "; echo $(ls -d */)", stdout=subprocess.PIPE, shell = True)
 		tumor_hash = subprocess.Popen("cd " + tumor_dir + "; echo $(ls -d */)", stdout=subprocess.PIPE,shell = True)
@@ -335,12 +338,12 @@ except:
 
 #Create tasks_to_run from samples.
 tasks_to_run = []
-# for name in samples.keys():
-# 	#Only keep TCGA ones. We don't seem to have permission to download the TARGET ones.
-# 	if "TCGA" in name:
-# 		tasks_to_run.append(deleteBAMFiles(name))
-# 	else:
-# 		continue
+for name in samples.keys():
+	#Only keep TCGA ones. We don't seem to have permission to download the TARGET ones.
+	if "TCGA" in name:
+		tasks_to_run.append(deleteBAMFiles(name))
+	else:
+		continue
 
 
 #Run with workers
