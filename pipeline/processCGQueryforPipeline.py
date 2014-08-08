@@ -104,7 +104,9 @@ for tumor in tumors:
 			'tumor_prefix': tumor_item['name'],
 			'ref_assem' : parse_refassem(tumor_item['ref_assem']),
 			'norm_aurid' : normal_item['aurid'],
-			'tumor_aurid' : tumor_item['aurid']
+			'tumor_aurid' : tumor_item['aurid'],
+			# 'norm_download_dir': "",
+			# 'tumor_download_dir': ""
 		}
 	except:
 		#There was not a match between the tumor and the normal samples.

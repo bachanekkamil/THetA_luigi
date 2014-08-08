@@ -79,7 +79,7 @@ class deleteBAMFiles(luigi.Task):
 class RunTHetA(luigi.Task):
 	global samples
 	name = luigi.Parameter()
-	out_dir = luigi.Parameter
+	out_dir = luigi.Parameter()
 	download_dir = luigi.Parameter()
 	this_out_dir = ""	
 	def requires(self):
@@ -93,7 +93,7 @@ class RunTHetA(luigi.Task):
 		subprocess.call(["mkdir", self.this_out_dir])
 		bicseq_output_loc = os.path.join(self.out_dir, "BICSeq/output", self.name + ".bicseg")
 		#Get read depth file location (_processed)
-		intervalPipeline_dir = os.path.join(self.out_dir, "intervalPipeline")thecowgoesmoo1!
+		intervalPipeline_dir = os.path.join(self.out_dir, "intervalPipeline")
 		
 		processed_file = subprocess.Popen("cd "  + intervalPipeline_dir +"; echo $(ls *_processed)", stdout=subprocess.PIPE, shell = True)
 		processed_file = processed_file.communicate()[0].strip()
@@ -229,13 +229,22 @@ class BAMtoGASV(luigi.Task):
 		tumor_dir = os.path.join(self.this_out_dir, "TUMOR")
 		subprocess.call(["mkdir", normal_dir])
 		subprocess.call(["mkdir", tumor_dir])
+		#Download dirs
+		paths_file = os.path.join(self.download_dir, self.name, "downloadComplete.txt")
+		lines = []
+		with self.input().open('r') as in_file:
+			lines = in_file.readlines()
+		lines = [a_dir.strip() for a_dir in lines]
+		print lines[0] + "#$*O&^#*(&$^#&*($^&*(#^$*^#&*($^*(#^$&*((#&*$"
 		#Get the names of the bam files.
-		norm_bam_extension = subprocess.Popen("cd "  + samples[self.name]['norm_download_dir'] +"; echo $(ls *.bam)", stdout=subprocess.PIPE, shell = True)
-		tumor_bam_extension = subprocess.Popen("cd " + samples[self.name]['tumor_download_dir'] + "; echo $(ls *.bam)", stdout=subprocess.PIPE,shell = True)
+		# norm_bam_extension = subprocess.Popen("cd "  + samples[self.name]['norm_download_dir'] +"; echo $(ls *.bam)", stdout=subprocess.PIPE, shell = True)
+		# tumor_bam_extension = subprocess.Popen("cd " + samples[self.name]['tumor_download_dir'] + "; echo $(ls *.bam)", stdout=subprocess.PIPE,shell = True)
+		norm_bam_extension = subprocess.Popen("cd "  + lines[0] +"; echo $(ls *.bam)", stdout=subprocess.PIPE, shell = True)
+		tumor_bam_extension = subprocess.Popen("cd " + lines[1] + "; echo $(ls *.bam)", stdout=subprocess.PIPE,shell = True)
 		norm_bam_extension = norm_bam_extension.communicate()[0].strip()
 		tumor_bam_extension = tumor_bam_extension.communicate()[0].strip()
-		normal_bam = os.path.join(samples[self.name]['norm_download_dir'], norm_bam_extension)
-		tumor_bam = os.path.join(samples[self.name]['tumor_download_dir'], tumor_bam_extension)
+		normal_bam = os.path.join(lines[0], norm_bam_extension)
+		tumor_bam = os.path.join(lines[1], tumor_bam_extension)
 		#Run on normal
 		if subprocess.call(["./pipeline/scripts/runBAMtoGASV.sh", normal_dir, normal_bam, samples[self.name]['norm_prefix'], "NORMAL"]) != 0:
 			sys.exit(0)
@@ -253,32 +262,33 @@ class BAMtoGASV(luigi.Task):
 class downloadGenome(luigi.Task):
 	global samples
 	name = luigi.Parameter()
-	pipeline_downloads = pipeline_downloads
 	download_dir = luigi.Parameter()
+	pipeline_downloads = pipeline_downloads
 	def run(self):
 		subprocess.call(["mkdir", self.pipeline_downloads])
 		self.download_dir = os.path.join(self.pipeline_downloads, self.name)
 		subprocess.call(["mkdir", self.download_dir])
 		normal_dir = os.path.join(self.download_dir, "NORMAL")
 		tumor_dir = os.path.join(self.download_dir, "TUMOR")
-		samples[self.name]['norm_download_dir'] = normal_dir
-		samples[self.name]['tumor_download_dir'] = tumor_dir
 		subprocess.call(["mkdir", normal_dir])
 		subprocess.call(["mkdir", tumor_dir])
 		#Download normal
-		if subprocess.call(["./PipelineSoftware/CGHub/runGeneTorrentNew.bash", samples[self.name]['norm_aurid'], normal_dir]) != 0:
-			sys.exit(0)
+		# if subprocess.call(["./PipelineSoftware/CGHub/runGeneTorrentNew.bash", samples[self.name]['norm_aurid'], normal_dir]) != 0:
+		# 	sys.exit(0)
 		#Download tumor
-		if subprocess.call(["./PipelineSoftware/CGHub/runGeneTorrentNew.bash", samples[self.name]['tumor_aurid'], tumor_dir]) !=0:
-			sys.exit(0)
+		# if subprocess.call(["./PipelineSoftware/CGHub/runGeneTorrentNew.bash", samples[self.name]['tumor_aurid'], tumor_dir]) !=0:
+		# 	sys.exit(0)
 		#Add the name of the download hash directory to the directory name.
 		normal_hash = subprocess.Popen("cd " + normal_dir + "; echo $(ls -d */)", stdout=subprocess.PIPE, shell = True)
 		tumor_hash = subprocess.Popen("cd " + tumor_dir + "; echo $(ls -d */)", stdout=subprocess.PIPE,shell = True)
 		normal_hash = normal_hash.communicate()[0].strip()
 		tumor_hash = tumor_hash.communicate()[0].strip()
-		samples[self.name]['norm_download_dir'] = os.path.join(samples[self.name]['norm_download_dir'], normal_hash)
-		samples[self.name]['tumor_download_dir'] = os.path.join(samples[self.name]['tumor_download_dir'], tumor_hash)
-		subprocess.call(["touch", os.path.join(self.download_dir, self.name + "downloadComplete.txt")])
+		samples[self.name]['norm_download_dir'] = os.path.join(normal_dir, normal_hash)
+		samples[self.name]['tumor_download_dir'] = os.path.join(tumor_dir, tumor_hash)
+		with self.output().open('w') as out_file:
+			out_file.write(samples[self.name]['norm_download_dir'] + "\n")
+			out_file.write(samples[self.name]['tumor_download_dir'])
+		#subprocess.call(["touch", os.path.join(self.download_dir, self.name + "downloadComplete.txt")])
 	def output(self):
 		return luigi.LocalTarget(os.path.join(self.download_dir, self.name + "downloadComplete.txt"))
 
@@ -325,17 +335,17 @@ except:
 
 #Create tasks_to_run from samples.
 tasks_to_run = []
-for name in samples.keys():
-	#Only keep TCGA ones. We don't seem to have permission to download the TARGET ones.
-	if "TCGA" in name:
-		tasks_to_run.append(deleteBAMFiles(name))
-	else:
-		continue
+# for name in samples.keys():
+# 	#Only keep TCGA ones. We don't seem to have permission to download the TARGET ones.
+# 	if "TCGA" in name:
+# 		tasks_to_run.append(deleteBAMFiles(name))
+# 	else:
+# 		continue
 
 
 #Run with workers
 
-# tasks_to_run.append(deleteBAMFiles("TCGA-A7-A0CE"))
+tasks_to_run.append(deleteBAMFiles("TCGA-A7-A0CE"))
 
 luigi.build(tasks_to_run, workers=16, scheduler_port=8082)
 

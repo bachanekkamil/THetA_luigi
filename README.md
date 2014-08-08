@@ -104,6 +104,9 @@ The order of execution is `requires() -> run() -> output()`.
 There are many other classes for Hadoop and recurrent pipelines, which are in the documentation if necessary.
 
 ##Important tidbits
+
+These are the kinds of details I wish were in the docs. Hopefully, they save some time if you modify the code.
+
 + Instance variables do not update across methods. This leads to some subtle bugs if output relies on some updated value, because the output file will be in a different location and the Task will seem to have never finished.
 + If the output for a Task already exists, the `run()` method will not be executed and Luigi will continue.
 + The browser must be open on the machine that the server is running on.
@@ -115,3 +118,4 @@ There are many other classes for Hadoop and recurrent pipelines, which are in th
 + Keeping the heavy-lifting of the run method in shell script keeps code modular and makes testing easier. It's easier to isolate actual pipeline problems when you're sure that your `runX` script works. Try to keep the ratio of Tasks to shell scripts 1 to 1.
 + The top-level task should be triggered first. It is not run until the very end, but the `requires()` method triggers a cascade that reaches down to the lowest-level Task. Presumably, this requires no other Tasks or just some local Target, so it will terminate the cascade and execute `run()`.
 + If you want to debug the code, make a new JSON file that contains only one genome's info.
++ All the internal data usage is in the `samples` dictionary. Each name maps to the vital info that's needed for a run.
