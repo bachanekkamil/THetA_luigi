@@ -66,7 +66,7 @@ The shell scripts for running each step of the pipeline are in `/pipeline`.
 
 ##Step 1: Generating the files to download
 
-The pipeline takes a JSON file with the names of samples and associated metadata as input. To generate this file, use `./pipeline/cgquery` with appropriate parameters.
+The pipeline takes a JSON file with the names of samples and associated metadata as input. To generate this file, use `./pipeline/cgquery` with appropriate parameters. Very important: you need your own key to access the UCSC Genetorrent client!
 ###Procedure
 1. Use a query such as `./pipeline/cgquery "library_strategy=WGS" >> seq.txt`. Make sure the output is piped to `seq.txt`. Details on how to use query filters can be found in the CGQuery handbook.
 2. In `pipeline/`, run `processCGQueryforPipeline.py`. A JSON file called `tumor_sample_info.json` should be generated in the top level directory.
