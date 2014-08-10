@@ -1,8 +1,8 @@
 #THetA pipeline
 
-This pipeline uses [Luigi](https://github.com/spotify/luigi) to automate the download, processing, and data analysis of THetA. THetA is a software suite that uses cancer genomic structural variation to determine tumor heterogeneity in a sample. 
+This pipeline uses [Luigi](https://github.com/spotify/luigi) to automate the download, processing, and data analysis of files related to THetA, a software suite that uses cancer genomic structural variation to determine tumor heterogeneity in a sample. A pipeline is helpful because the inputs for each program can be convoluted and manual runs will be unorganized, take forever, and break. This pipeline automates and organizes the complete suite of software runs for as few or as many samples specified. Luigi's centralized server and worker model makes it efficient, safe, and informational.
 
-THetA was developed and written by the [Raphael Lab](http://compbio.cs.brown.edu/) at Brown University's CCMB.
+[THetA](https://github.com/raphael-group/THetA) was developed and written by the [Raphael Lab](http://compbio.cs.brown.edu/) at Brown University's CCMB.
 
 #Structure
 
@@ -68,7 +68,7 @@ The shell scripts for running each step of the pipeline are in `/pipeline`.
 
 The pipeline takes a JSON file with the names of samples and associated metadata as input. To generate this file, use `./pipeline/cgquery` with appropriate parameters.
 ###Procedure
-1. Use a query such as `./pipeline/cgquery "library_strategy=WGS" >> seq.txt`. Make sure the output is piped to `seq.txt`.
+1. Use a query such as `./pipeline/cgquery "library_strategy=WGS" >> seq.txt`. Make sure the output is piped to `seq.txt`. Details on how to use query filters can be found in the CGQuery handbook.
 2. In `pipeline/`, run `processCGQueryforPipeline.py`. A JSON file called `tumor_sample_info.json` should be generated in the top level directory.
 
 ##Step 2: Start up the server
