@@ -1,3 +1,5 @@
+By David Liu at the Raphael Lab @ Brown University
+
 #THetA pipeline
 
 This pipeline uses [Luigi](https://github.com/spotify/luigi) to automate the download, processing, and data analysis of files related to THetA, a software suite that uses cancer genomic structural variation to determine tumor heterogeneity in a sample. A pipeline is helpful because the inputs for each program can be convoluted and manual runs will be unorganized, take forever, and break. This pipeline automates and organizes the complete suite of software runs for as few or as many samples specified. Luigi's centralized server and worker model makes it efficient, safe, and informational.
